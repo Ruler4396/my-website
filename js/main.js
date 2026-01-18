@@ -108,126 +108,41 @@ const contentData = {
     ]
 };
 
-// ===== GitHub 内容加载函数 =====
-const GITHUB_OWNER = 'Ruler4396';
-const GITHUB_REPO = 'my-website';
-const GITHUB_BRANCH = 'main';
-
-async function loadGithubContent(path) {
-    try {
-        const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}?ref=${GITHUB_BRANCH}`;
-        const response = await fetch(url);
-
-        if (!response.ok) {
-            throw new Error('无法加载内容');
-        }
-
-        const data = await response.json();
-
-        if (data.content) {
-            const decodedContent = atob(data.content);
-            return decodedContent;
-        }
-        return null;
-    } catch (error) {
-        console.error('加载内容失败:', error);
-        return null;
-    }
-}
-
-// ===== 简单的 Markdown 转 HTML =====
-function markdownToHTML(markdown) {
-    let html = markdown;
-
-    // 转义 HTML 特殊字符
-    html = html.replace(/&/g, '&amp;')
-               .replace(/</g, '&lt;')
-               .replace(/>/g, '&gt;');
-
-    // 代码块
-    html = html.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
-
-    // 行内代码
-    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-
-    // 标题
-    html = html.replace(/^#### (.+)$/gm, '<h4>$1</h4>');
-    html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
-    html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
-    html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
-
-    // 粗体和斜体
-    html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
-    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
-
-    // 引用
-    html = html.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
-
-    // 无序列表
-    html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
-    html = html.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
-
-    // 有序列表
-    html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
-
-    // 链接
-    html = html.replace(/\[([^\]]+)\]\(([^\)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
-
-    // 图片
-    html = html.replace(/!\[([^\]]*)\]\(([^\)]+)\)/g, '<img src="$2" alt="$1">');
-
-    // 分隔线
-    html = html.replace(/^---$/gm, '<hr>');
-
-    // 段落
-    html = html.replace(/\n\n/g, '</p><p>');
-    html = '<p>' + html + '</p>';
-
-    // 清理空段落
-    html = html.replace(/<p>\s*<\/p>/g, '');
-    html = html.replace(/<p>(<h[1-6]>)/g, '$1');
-    html = html.replace(/(<\/h[1-6]>)<\/p>/g, '$1');
-    html = html.replace(/<p>(<ul>)/g, '$1');
-    html = html.replace(/(<\/ul>)<\/p>/g, '$1');
-    html = html.replace(/<p>(<ol>)/g, '$1');
-    html = html.replace(/(<\/ol>)<\/p>/g, '$1');
-    html = html.replace(/<p>(<pre>)/g, '$1');
-    html = html.replace(/(<\/pre>)<\/p>/g, '$1');
-    html = html.replace(/<p>(<blockquote>)/g, '$1');
-    html = html.replace(/(<\/blockquote>)<\/p>/g, '$1');
-    html = html.replace(/<p>(<\/li>)/g, '$1');
-    html = html.replace(/(<li>)<\/p>/g, '$1');
-
-    return html;
-}
-
 // ===== Markdown 模态框 =====
 const markdownModal = document.getElementById('markdown-modal');
 const modalOverlay = document.getElementById('modal-overlay');
 const modalClose = document.getElementById('modal-close');
 const modalTitle = document.getElementById('modal-title');
-const markdownContent = document.getElementById('markdown-content');
+const markdownContentDiv = document.getElementById('markdown-content');
 
-// 打开模态框
-async function openMarkdownModal(title, filePath) {
+// 打开模态框 - 使用本地预加载的内容
+function openMarkdownModal(title, contentKey) {
     modalTitle.textContent = title;
-    markdownContent.innerHTML = '<p style="text-align: center; padding: 40px;">加载中...</p>';
+    markdownContentDiv.innerHTML = '<p style="text-align: center; padding: 40px;">加载中...</p>';
     markdownModal.classList.add('active');
     document.body.style.overflow = 'hidden';
 
-    // 尝试从 GitHub 加载内容
-    const content = await loadGithubContent(filePath);
+    // 从预加载的数据中读取内容
+    const markdownText = window.markdownContent[contentKey];
 
-    if (content) {
-        const htmlContent = markdownToHTML(content);
-        markdownContent.innerHTML = htmlContent;
+    if (markdownText) {
+        // 使用 marked.js 解析 markdown
+        try {
+            const htmlContent = marked.parse(markdownText);
+            markdownContentDiv.innerHTML = htmlContent;
+        } catch (error) {
+            console.error('Markdown解析失败:', error);
+            markdownContentDiv.innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <p>内容解析失败</p>
+                </div>
+            `;
+        }
     } else {
-        // 如果 GitHub 加载失败，显示备用链接
-        markdownContent.innerHTML = `
+        markdownContentDiv.innerHTML = `
             <div style="text-align: center; padding: 40px;">
-                <p>无法从 GitHub 加载内容</p>
-                <p>您可以 <a href="${filePath}" target="_blank" style="color: var(--primary-color);">点击这里</a> 在新标签页中打开</p>
+                <p>未找到内容</p>
+                <p>内容键: ${contentKey}</p>
             </div>
         `;
     }
@@ -266,7 +181,7 @@ function renderArticles() {
                 <p>点击查看完整内容...</p>
             </div>
             <div class="content-card-footer">
-                <span class="read-more" data-file="content/articles/${article.file}" data-title="${article.title}">
+                <span class="read-more" data-content="articles/${article.file.replace('.md', '')}" data-title="${article.title}">
                     阅读全文 →
                 </span>
             </div>
@@ -275,7 +190,7 @@ function renderArticles() {
         // 绑定点击事件
         const readMore = card.querySelector('.read-more');
         readMore.addEventListener('click', () => {
-            openMarkdownModal(article.title, `content/articles/${article.file}`);
+            openMarkdownModal(article.title, `articles/${article.file.replace('.md', '')}`);
         });
 
         grid.appendChild(card);
@@ -299,7 +214,7 @@ function renderNotes() {
                 <p>查看我的读书笔记，记录思考与收获...</p>
             </div>
             <div class="content-card-footer">
-                <span class="read-more" data-file="content/notes/${note.file}" data-title="${note.title}">
+                <span class="read-more" data-content="notes/${note.file.replace('.md', '')}" data-title="${note.title}">
                     查看笔记 →
                 </span>
             </div>
@@ -308,7 +223,7 @@ function renderNotes() {
         // 绑定点击事件
         const readMore = card.querySelector('.read-more');
         readMore.addEventListener('click', () => {
-            openMarkdownModal(note.title, `content/notes/${note.file}`);
+            openMarkdownModal(note.title, `notes/${note.file.replace('.md', '')}`);
         });
 
         list.appendChild(card);
@@ -345,7 +260,7 @@ function renderMemories() {
                 珍藏的美好回忆...
             </div>
             <div class="content-card-footer">
-                <span class="read-more" data-file="content/memories/${memory.file}" data-title="${memory.title}">
+                <span class="read-more" data-content="memories/${memory.file.replace('.md', '')}" data-title="${memory.title}">
                     查看回忆 →
                 </span>
             </div>
@@ -354,7 +269,7 @@ function renderMemories() {
         // 绑定点击事件
         const readMore = card.querySelector('.read-more');
         readMore.addEventListener('click', () => {
-            openMarkdownModal(memory.title, `content/memories/${memory.file}`);
+            openMarkdownModal(memory.title, `memories/${memory.file.replace('.md', '')}`);
         });
 
         list.appendChild(card);
