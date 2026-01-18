@@ -8,7 +8,8 @@
       "mcp__Github__create_repository",
       "Bash(git branch:*)",
       "Bash(git remote add:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "mcp__Github__get_file_contents"
     ]
   }
 }

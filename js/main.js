@@ -1,7 +1,4 @@
 // ===== 暗黑模式检测和切换 =====
-const themeToggle = document.getElementById('theme-toggle');
-const modalThemeToggle = document.getElementById('modal-theme-toggle');
-
 // 检测系统暗黑模式偏好
 const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
 
@@ -32,8 +29,19 @@ function toggleTheme() {
 }
 
 // 初始化主题
-const initialTheme = getSavedTheme();
-applyTheme(initialTheme);
+function initTheme() {
+    const initialTheme = getSavedTheme();
+    applyTheme(initialTheme);
+
+    // 绑定主题切换按钮
+    const themeToggle = document.getElementById('theme-toggle');
+    const modalThemeToggle = document.getElementById('modal-theme-toggle');
+    themeToggle?.addEventListener('click', toggleTheme);
+    modalThemeToggle?.addEventListener('click', toggleTheme);
+}
+
+// 立即初始化主题（不等待DOM）
+initTheme();
 
 // 监听系统主题变化
 prefersDarkScheme.addEventListener('change', (e) => {
@@ -41,10 +49,6 @@ prefersDarkScheme.addEventListener('change', (e) => {
         applyTheme(e.matches ? 'dark' : 'light');
     }
 });
-
-// 绑定主题切换按钮
-themeToggle?.addEventListener('click', toggleTheme);
-modalThemeToggle?.addEventListener('click', toggleTheme);
 
 // ===== 导航栏交互 =====
 const hamburger = document.querySelector('.hamburger');
@@ -376,6 +380,12 @@ function handleScrollAnimation() {
 
 // ===== 页面加载完成后初始化 =====
 document.addEventListener('DOMContentLoaded', () => {
+    // 重新绑定主题切换按钮（防止第一次绑定失败）
+    const themeToggle = document.getElementById('theme-toggle');
+    const modalThemeToggle = document.getElementById('modal-theme-toggle');
+    themeToggle?.addEventListener('click', toggleTheme);
+    modalThemeToggle?.addEventListener('click', toggleTheme);
+
     renderArticles();
     renderNotes();
     renderPoetry();
