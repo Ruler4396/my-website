@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Github__get_me",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}

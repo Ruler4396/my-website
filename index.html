@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的个人空间</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">MySpace</div>
+            <ul class="nav-menu">
+                <li><a href="#home" class="nav-link active">首页</a></li>
+                <li><a href="#about" class="nav-link">关于</a></li>
+                <li><a href="#articles" class="nav-link">文章</a></li>
+                <li><a href="#notes" class="nav-link">读书笔记</a></li>
+                <li><a href="#poetry" class="nav-link">古诗词</a></li>
+                <li><a href="#memories" class="nav-link">纪念品</a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主页横幅 -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">欢迎来到我的个人空间</h1>
+            <p class="hero-subtitle">记录思考，分享生活，珍藏回忆</p>
+            <div class="hero-quote">
+                <p>"你必须知道各个重要学科的重要理论。"</p>
+                <p class="quote-author">—— 查理·芒格</p>
+            </div>
+            <a href="#about" class="btn-primary">了解更多</a>
+        </div>
+        <div class="hero-bg"></div>
+    </section>
+
+    <!-- 关于我 -->
+    <section id="about" class="section">
+        <div class="container">
+            <h2 class="section-title">关于我</h2>
+            <div class="about-grid">
+                <div class="about-card">
+                    <div class="card-icon">📚</div>
+                    <h3>知识探索</h3>
+                    <p>检验自己是否真正掌握知识的方法是尝试将它教授给他人。</p>
+                </div>
+                <div class="about-card">
+                    <div class="card-icon">🎨</div>
+                    <h3>审美创作</h3>
+                    <p>审美即偏见，人人执偏见。在绘画、摄影、海报中寻找美。</p>
+                </div>
+                <div class="about-card">
+                    <div class="card-icon">✍️</div>
+                    <h3>阅读写作</h3>
+                    <p>笔记是连接阅读和写作的桥梁。在阅读中学习，在写作中成长。</p>
+                </div>
+                <div class="about-card">
+                    <div class="card-icon">🎯</div>
+                    <h3>理想现实</h3>
+                    <p>让理想照进现实。理想和现实从来都不是也不应该是相互对立的两件事。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 文章 -->
+    <section id="articles" class="section section-alt">
+        <div class="container">
+            <h2 class="section-title">文章本天成</h2>
+            <div class="content-grid" id="articles-grid">
+                <!-- 文章将通过JavaScript动态加载 -->
+            </div>
+        </div>
+    </section>
+
+    <!-- 读书笔记 -->
+    <section id="notes" class="section">
+        <div class="container">
+            <h2 class="section-title">读书笔记</h2>
+            <div class="notes-list" id="notes-list">
+                <!-- 读书笔记将通过JavaScript动态加载 -->
+            </div>
+        </div>
+    </section>
+
+    <!-- 古诗词 -->
+    <section id="poetry" class="section section-alt">
+        <div class="container">
+            <h2 class="section-title">古诗词</h2>
+            <div class="poetry-grid" id="poetry-grid">
+                <!-- 古诗词将通过JavaScript动态加载 -->
+            </div>
+        </div>
+    </section>
+
+    <!-- 纪念品 -->
+    <section id="memories" class="section">
+        <div class="container">
+            <h2 class="section-title">纪念品</h2>
+            <div class="memories-list" id="memories-list">
+                <!-- 纪念品将通过JavaScript动态加载 -->
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024-2025 我的个人空间. 用心记录，用爱分享。</p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
