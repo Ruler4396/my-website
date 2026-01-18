@@ -1,3 +1,51 @@
+// ===== 暗黑模式检测和切换 =====
+const themeToggle = document.getElementById('theme-toggle');
+const modalThemeToggle = document.getElementById('modal-theme-toggle');
+
+// 检测系统暗黑模式偏好
+const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+
+// 获取保存的主题或使用系统偏好
+function getSavedTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        return savedTheme;
+    }
+    return prefersDarkScheme.matches ? 'dark' : 'light';
+}
+
+// 应用主题
+function applyTheme(theme) {
+    if (theme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+        document.documentElement.removeAttribute('data-theme');
+    }
+    localStorage.setItem('theme', theme);
+}
+
+// 切换主题
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    applyTheme(newTheme);
+}
+
+// 初始化主题
+const initialTheme = getSavedTheme();
+applyTheme(initialTheme);
+
+// 监听系统主题变化
+prefersDarkScheme.addEventListener('change', (e) => {
+    if (!localStorage.getItem('theme')) {
+        applyTheme(e.matches ? 'dark' : 'light');
+    }
+});
+
+// 绑定主题切换按钮
+themeToggle?.addEventListener('click', toggleTheme);
+modalThemeToggle?.addEventListener('click', toggleTheme);
+
 // ===== 导航栏交互 =====
 const hamburger = document.querySelector('.hamburger');
 const navMenu = document.querySelector('.nav-menu');
@@ -57,9 +105,9 @@ const contentData = {
 };
 
 // ===== GitHub 内容加载函数 =====
-const GITHUB_OWNER = 'Ruler4396'; // GitHub用户名
-const GITHUB_REPO = 'my-website'; // 仓库名
-const GITHUB_BRANCH = 'main'; // 分支名
+const GITHUB_OWNER = 'Ruler4396';
+const GITHUB_REPO = 'my-website';
+const GITHUB_BRANCH = 'main';
 
 async function loadGithubContent(path) {
     try {
@@ -73,7 +121,6 @@ async function loadGithubContent(path) {
         const data = await response.json();
 
         if (data.content) {
-            // GitHub API 返回的是 base64 编码的内容
             const decodedContent = atob(data.content);
             return decodedContent;
         }
@@ -84,27 +131,119 @@ async function loadGithubContent(path) {
     }
 }
 
-// ===== 解析 Markdown 内容 =====
-function parseMarkdownPreview(markdown, maxLength = 150) {
-    // 移除 markdown 语法标记
-    let text = markdown
-        .replace(/^#+\s+/gm, '') // 移除标题
-        .replace(/\*\*/g, '') // 移除加粗
-        .replace(/\*/g, '') // 移除斜体
-        .replace(/!\[.*?\]\(.*?\)/g, '') // 移除图片
-        .replace(/\[.*?\]\(.*?\)/g, '') // 移除链接
-        .replace(/^>+\s*/gm, '') // 移除引用
-        .replace(/^-+\s*/gm, '') // 移除列表
-        .replace(/\n\s*\n/g, '\n') // 合并多余换行
-        .trim();
+// ===== 简单的 Markdown 转 HTML =====
+function markdownToHTML(markdown) {
+    let html = markdown;
 
-    // 截取预览
-    if (text.length > maxLength) {
-        text = text.substring(0, maxLength) + '...';
-    }
+    // 转义 HTML 特殊字符
+    html = html.replace(/&/g, '&amp;')
+               .replace(/</g, '&lt;')
+               .replace(/>/g, '&gt;');
 
-    return text;
+    // 代码块
+    html = html.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
+
+    // 行内代码
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+    // 标题
+    html = html.replace(/^#### (.+)$/gm, '<h4>$1</h4>');
+    html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+    html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+    html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+
+    // 粗体和斜体
+    html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+    // 引用
+    html = html.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
+
+    // 无序列表
+    html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
+    html = html.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
+
+    // 有序列表
+    html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+
+    // 链接
+    html = html.replace(/\[([^\]]+)\]\(([^\)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+
+    // 图片
+    html = html.replace(/!\[([^\]]*)\]\(([^\)]+)\)/g, '<img src="$2" alt="$1">');
+
+    // 分隔线
+    html = html.replace(/^---$/gm, '<hr>');
+
+    // 段落
+    html = html.replace(/\n\n/g, '</p><p>');
+    html = '<p>' + html + '</p>';
+
+    // 清理空段落
+    html = html.replace(/<p>\s*<\/p>/g, '');
+    html = html.replace(/<p>(<h[1-6]>)/g, '$1');
+    html = html.replace(/(<\/h[1-6]>)<\/p>/g, '$1');
+    html = html.replace(/<p>(<ul>)/g, '$1');
+    html = html.replace(/(<\/ul>)<\/p>/g, '$1');
+    html = html.replace(/<p>(<ol>)/g, '$1');
+    html = html.replace(/(<\/ol>)<\/p>/g, '$1');
+    html = html.replace(/<p>(<pre>)/g, '$1');
+    html = html.replace(/(<\/pre>)<\/p>/g, '$1');
+    html = html.replace(/<p>(<blockquote>)/g, '$1');
+    html = html.replace(/(<\/blockquote>)<\/p>/g, '$1');
+    html = html.replace(/<p>(<\/li>)/g, '$1');
+    html = html.replace(/(<li>)<\/p>/g, '$1');
+
+    return html;
 }
+
+// ===== Markdown 模态框 =====
+const markdownModal = document.getElementById('markdown-modal');
+const modalOverlay = document.getElementById('modal-overlay');
+const modalClose = document.getElementById('modal-close');
+const modalTitle = document.getElementById('modal-title');
+const markdownContent = document.getElementById('markdown-content');
+
+// 打开模态框
+async function openMarkdownModal(title, filePath) {
+    modalTitle.textContent = title;
+    markdownContent.innerHTML = '<p style="text-align: center; padding: 40px;">加载中...</p>';
+    markdownModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    // 尝试从 GitHub 加载内容
+    const content = await loadGithubContent(filePath);
+
+    if (content) {
+        const htmlContent = markdownToHTML(content);
+        markdownContent.innerHTML = htmlContent;
+    } else {
+        // 如果 GitHub 加载失败，显示备用链接
+        markdownContent.innerHTML = `
+            <div style="text-align: center; padding: 40px;">
+                <p>无法从 GitHub 加载内容</p>
+                <p>您可以 <a href="${filePath}" target="_blank" style="color: var(--primary-color);">点击这里</a> 在新标签页中打开</p>
+            </div>
+        `;
+    }
+}
+
+// 关闭模态框
+function closeMarkdownModal() {
+    markdownModal.classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+modalOverlay?.addEventListener('click', closeMarkdownModal);
+modalClose?.addEventListener('click', closeMarkdownModal);
+
+// ESC 键关闭模态框
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && markdownModal.classList.contains('active')) {
+        closeMarkdownModal();
+    }
+});
 
 // ===== 渲染文章卡片 =====
 function renderArticles() {
@@ -123,11 +262,18 @@ function renderArticles() {
                 <p>点击查看完整内容...</p>
             </div>
             <div class="content-card-footer">
-                <a href="content/articles/${article.file}" class="read-more" target="_blank">
+                <span class="read-more" data-file="content/articles/${article.file}" data-title="${article.title}">
                     阅读全文 →
-                </a>
+                </span>
             </div>
         `;
+
+        // 绑定点击事件
+        const readMore = card.querySelector('.read-more');
+        readMore.addEventListener('click', () => {
+            openMarkdownModal(article.title, `content/articles/${article.file}`);
+        });
+
         grid.appendChild(card);
     });
 }
@@ -149,11 +295,18 @@ function renderNotes() {
                 <p>查看我的读书笔记，记录思考与收获...</p>
             </div>
             <div class="content-card-footer">
-                <a href="content/notes/${note.file}" class="read-more" target="_blank">
+                <span class="read-more" data-file="content/notes/${note.file}" data-title="${note.title}">
                     查看笔记 →
-                </a>
+                </span>
             </div>
         `;
+
+        // 绑定点击事件
+        const readMore = card.querySelector('.read-more');
+        readMore.addEventListener('click', () => {
+            openMarkdownModal(note.title, `content/notes/${note.file}`);
+        });
+
         list.appendChild(card);
     });
 }
@@ -188,11 +341,18 @@ function renderMemories() {
                 珍藏的美好回忆...
             </div>
             <div class="content-card-footer">
-                <a href="content/memories/${memory.file}" class="read-more" target="_blank">
+                <span class="read-more" data-file="content/memories/${memory.file}" data-title="${memory.title}">
                     查看回忆 →
-                </a>
+                </span>
             </div>
         `;
+
+        // 绑定点击事件
+        const readMore = card.querySelector('.read-more');
+        readMore.addEventListener('click', () => {
+            openMarkdownModal(memory.title, `content/memories/${memory.file}`);
+        });
+
         list.appendChild(card);
     });
 }
@@ -226,25 +386,16 @@ document.addEventListener('DOMContentLoaded', () => {
 // ===== 平滑滚动 =====
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            target.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
+        const href = this.getAttribute('href');
+        if (href !== '#' && href.startsWith('#')) {
+            e.preventDefault();
+            const target = document.querySelector(href);
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
         }
     });
-});
-
-// ===== 返回顶部按钮（可选） =====
-window.addEventListener('scroll', () => {
-    const scrollTop = window.pageYOffset;
-
-    // 可以在这里添加返回顶部按钮的显示/隐藏逻辑
-    if (scrollTop > 500) {
-        // 显示返回顶部按钮
-    } else {
-        // 隐藏返回顶部按钮
-    }
 });
