@@ -29,6 +29,8 @@ function getMarkdownFiles(dir, baseDir = '') {
 function escapeJS(str) {
     return str
         .replace(/\\/g, '\\\\')
+        .replace(/`/g, '\\`')
+        .replace(/\$\{/g, '\\${')
         .replace(/'/g, "\\'")
         .replace(/"/g, '\\"')
         .replace(/\n/g, '\\n')
