@@ -3,26 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MyWeb | 个人博客</title>
-    <meta name="description" content="个人博客：记录技术、阅读、诗歌与生活。">
+    <title>AQSK — 写作、阅读与资料索引</title>
+    <meta name="description" content="个人写作、阅读笔记与资料索引。">
+    <meta name="theme-color" content="#0f1014">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter+Tight:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
 </head>
 <body>
-    <div class="bg-layer" aria-hidden="true">
-        <span class="orb orb-a"></span>
-        <span class="orb orb-b"></span>
-        <span class="orb orb-c"></span>
-    </div>
+    <div class="page-noise" aria-hidden="true"></div>
+    <div class="page-glow" aria-hidden="true"></div>
 
     <header class="site-header" id="top">
         <div class="shell header-inner">
             <a href="#top" class="brand" aria-label="返回顶部">
-                <span class="brand-mark">MW</span>
-                <span class="brand-text">MyWeb</span>
+                <span class="brand-code">AQSK</span>
+                <span class="brand-name">Journal</span>
             </a>
 
             <button class="menu-toggle" id="menu-toggle" aria-label="打开导航" aria-expanded="false">
@@ -31,86 +29,116 @@
             </button>
 
             <nav class="header-nav" id="header-nav" aria-label="主导航">
-                <a href="#latest" class="nav-link">最新</a>
-                <a href="#library" class="nav-link">内容库</a>
-                <a href="#about" class="nav-link">关于</a>
+                <a href="#selected" class="nav-link">选读</a>
+                <a href="#spectrum" class="nav-link">谱系</a>
+                <a href="#archive" class="nav-link">索引</a>
+                <a href="#method" class="nav-link">方法</a>
             </nav>
 
             <button class="theme-toggle" id="theme-toggle" aria-label="切换主题" aria-pressed="false">
-                <span class="theme-icon" aria-hidden="true">◐</span>
+                Theme
             </button>
         </div>
     </header>
 
     <main>
         <section class="hero reveal" id="hero">
-            <div class="shell hero-inner">
-                <p class="eyebrow">PERSONAL KNOWLEDGE BASE</p>
-                <h1>一座简洁但有温度的个人博客</h1>
-                <p class="hero-lead">
-                    记录技术、阅读、诗歌与生活。所有内容来自本地 Markdown，
-                    以更轻、更快的方式沉淀长期思考。
-                </p>
-                <div class="hero-actions">
-                    <a class="btn btn-primary" href="#latest">查看最新</a>
-                    <a class="btn btn-ghost" href="#library">浏览全部</a>
+            <div class="shell hero-grid">
+                <div class="hero-copy">
+                    <p class="section-kicker">AQSK / PERSONAL ARCHIVE</p>
+                    <h1>写作、阅读、索引。</h1>
+                    <p class="hero-summary">一个持续更新的个人资料站：文章、笔记、古典文本与一些记忆。</p>
+                    <div class="hero-actions">
+                        <a class="action-link action-link-primary" href="#selected">进入选读</a>
+                        <a class="action-link" href="#archive">查看全部</a>
+                    </div>
+                    <div class="hero-metrics">
+                        <article>
+                            <span class="metric-label">Entries</span>
+                            <strong id="metric-total">0</strong>
+                        </article>
+                        <article>
+                            <span class="metric-label">Writing</span>
+                            <strong id="metric-articles">0</strong>
+                        </article>
+                        <article>
+                            <span class="metric-label">Timeline</span>
+                            <strong id="metric-years">--</strong>
+                        </article>
+                    </div>
                 </div>
-                <div class="hero-stats">
-                    <article>
-                        <h3 id="stat-total">0</h3>
-                        <p>总条目</p>
-                    </article>
-                    <article>
-                        <h3 id="stat-articles">0</h3>
-                        <p>文章</p>
-                    </article>
-                    <article>
-                        <h3 id="stat-notes">0</h3>
-                        <p>笔记</p>
-                    </article>
+
+                <aside class="hero-rail">
+                    <article class="hero-feature" id="hero-feature"></article>
+                    <div class="hero-note">
+                        <p>少即是多，少用形容词。</p>
+                        <p>检验知识最好的方式，是尝试把它教给别人。</p>
+                    </div>
+                </aside>
+            </div>
+        </section>
+
+        <section class="section reveal" id="selected">
+            <div class="shell">
+                <div class="section-head">
+                    <span class="section-index">01</span>
+                    <div>
+                        <p class="section-kicker">SELECTED WRITING</p>
+                        <h2>选读</h2>
+                    </div>
+                </div>
+                <div class="selected-layout">
+                    <div class="selected-primary" id="selected-primary"></div>
+                    <div class="selected-list" id="selected-list"></div>
                 </div>
             </div>
         </section>
 
-        <section class="section reveal" id="latest">
+        <section class="section reveal" id="spectrum">
             <div class="shell">
                 <div class="section-head">
-                    <h2>最新文章</h2>
-                    <p>按时间排序，优先展示近期发布内容。</p>
+                    <span class="section-index">02</span>
+                    <div>
+                        <p class="section-kicker">CONTENT SPECTRUM</p>
+                        <h2>谱系</h2>
+                    </div>
                 </div>
-                <div class="featured-grid" id="featured-grid"></div>
+                <div class="spectrum-grid" id="spectrum-grid"></div>
             </div>
         </section>
 
-        <section class="section reveal" id="library">
+        <section class="section reveal" id="archive">
             <div class="shell">
-                <div class="section-head">
-                    <h2>内容库</h2>
-                    <p>按分类浏览全部 Markdown，支持关键词搜索。</p>
-                </div>
-
-                <div class="toolbar">
-                    <div class="filter-tabs" id="filter-tabs"></div>
-                    <label class="search-wrap" for="search-input">
-                        <span>检索</span>
-                        <input type="search" id="search-input" placeholder="输入标题或摘要关键词">
+                <div class="section-head section-head-archive">
+                    <div>
+                        <span class="section-index">03</span>
+                        <p class="section-kicker">FULL INDEX</p>
+                        <h2>索引</h2>
+                    </div>
+                    <label class="search-box" for="search-input">
+                        <span>Search</span>
+                        <input type="search" id="search-input" placeholder="搜索标题或关键词">
                     </label>
                 </div>
-
-                <div class="library-grid" id="library-grid"></div>
+                <div class="filter-tabs" id="filter-tabs"></div>
+                <div class="archive-list" id="archive-list"></div>
             </div>
         </section>
 
-        <section class="section reveal" id="about">
-            <div class="shell">
-                <div class="about-card">
-                    <p class="eyebrow">ABOUT THIS BLOG</p>
-                    <h2>少即是多，慢就是快</h2>
-                    <p>
-                        这个站点聚焦写作与知识整理，不堆砌花哨功能。
-                        我希望每一篇内容都可以被长期检索、反复阅读，并持续更新。
-                    </p>
-                    <p class="quote">“你必须知道各个重要学科的重要理论。”</p>
+        <section class="section reveal" id="method">
+            <div class="shell method-grid">
+                <div class="method-lead">
+                    <p class="section-kicker">METHOD</p>
+                    <h2>少即是多，慢就是快。</h2>
+                    <p class="method-quote">“你必须知道各个重要学科的重要理论。”</p>
+                </div>
+                <div class="method-copy">
+                    <p>这个站点不追求解释一切，只负责留下判断、索引与反复阅读的入口。</p>
+                    <ul>
+                        <li>写作优先于包装</li>
+                        <li>索引优先于堆叠</li>
+                        <li>节奏优先于装饰</li>
+                    </ul>
                 </div>
             </div>
         </section>
@@ -118,20 +146,33 @@
 
     <footer class="site-footer">
         <div class="shell footer-inner">
-            <p>© <span id="footer-year"></span> MyWeb. Built for focused writing.</p>
-            <a href="#top">返回顶部</a>
+            <div class="footer-meta">
+                <p>© <span id="footer-year"></span> AQSK</p>
+                <div class="footer-records" aria-label="网站备案信息">
+                    <a class="footer-record footer-record-gongan" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=44090402441277" target="_blank" rel="noreferrer noopener" aria-label="粤公网安备 44090402441277 号">
+                        <img class="footer-record-icon" src="备案图标.png" alt="公安备案图标" width="18" height="20">
+                        <span>粤公网安备44090402441277号</span>
+                    </a>
+                    <a class="footer-record" href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer noopener">粤ICP备2026022061号</a>
+                </div>
+            </div>
+            <div class="footer-links">
+                <a class="footer-link" href="https://aqsk.top/classroom/" target="_blank" rel="noreferrer">班级管理系统</a>
+                <a class="footer-link" href="#top">Back to top</a>
+            </div>
         </div>
     </footer>
 
     <div class="reader" id="reader" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="reader-title">
         <button class="reader-backdrop" id="reader-backdrop" aria-label="关闭阅读器"></button>
         <article class="reader-panel">
+            <div class="reader-progress"><span id="reader-progress-bar"></span></div>
             <header class="reader-head">
-                <div>
+                <div class="reader-head-main">
                     <p class="reader-meta" id="reader-meta"></p>
                     <h3 id="reader-title">标题</h3>
                 </div>
-                <button class="reader-close" id="reader-close" aria-label="关闭">✕</button>
+                <button class="reader-close" id="reader-close" aria-label="关闭">Close</button>
             </header>
             <div class="reader-body markdown-body" id="reader-body"></div>
         </article>
