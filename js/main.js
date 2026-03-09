@@ -1,42 +1,49 @@
 const CATEGORY_META = {
-    articles: { label: "文章", summary: "长文写作", priority: 1 },
-    notes: { label: "读书笔记", summary: "知识摘录", priority: 2 },
-    poetry: { label: "古诗词", summary: "文学收藏", priority: 3 },
-    memories: { label: "纪念品", summary: "生活片段", priority: 4 },
-    misc: { label: "杂项", summary: "工具与清单", priority: 5 }
+    articles: { label: "文章", summary: "长篇写作与思考。", order: 1 },
+    notes: { label: "笔记", summary: "读书摘要与知识摘录。", order: 2 },
+    poetry: { label: "古典文本", summary: "保留值得反复阅读的篇章。", order: 3 },
+    memories: { label: "记忆", summary: "私人而短促的纪念文本。", order: 4 },
+    misc: { label: "清单", summary: "工具、语法与杂项索引。", order: 5 }
 };
 
 const state = {
     allItems: [],
     articleItems: [],
     activeFilter: "all",
-    query: ""
+    query: "",
+    readerProgressBound: false
 };
 
 const elements = {
     themeToggle: document.getElementById("theme-toggle"),
     menuToggle: document.getElementById("menu-toggle"),
     headerNav: document.getElementById("header-nav"),
-    featuredGrid: document.getElementById("featured-grid"),
-    libraryGrid: document.getElementById("library-grid"),
+    heroFeature: document.getElementById("hero-feature"),
+    metricTotal: document.getElementById("metric-total"),
+    metricArticles: document.getElementById("metric-articles"),
+    metricYears: document.getElementById("metric-years"),
+    selectedPrimary: document.getElementById("selected-primary"),
+    selectedList: document.getElementById("selected-list"),
+    spectrumGrid: document.getElementById("spectrum-grid"),
     filterTabs: document.getElementById("filter-tabs"),
     searchInput: document.getElementById("search-input"),
-    statTotal: document.getElementById("stat-total"),
-    statArticles: document.getElementById("stat-articles"),
-    statNotes: document.getElementById("stat-notes"),
+    archiveList: document.getElementById("archive-list"),
+    footerYear: document.getElementById("footer-year"),
     reader: document.getElementById("reader"),
     readerBackdrop: document.getElementById("reader-backdrop"),
     readerClose: document.getElementById("reader-close"),
-    readerTitle: document.getElementById("reader-title"),
     readerMeta: document.getElementById("reader-meta"),
+    readerTitle: document.getElementById("reader-title"),
     readerBody: document.getElementById("reader-body"),
-    footerYear: document.getElementById("footer-year")
+    readerProgressBar: document.getElementById("reader-progress-bar")
 };
 
 function sanitizeInline(text) {
     return text
-        .replace(/[`*_>#-]/g, "")
+        .replace(/```[\s\S]*?```/g, "")
+        .replace(/`([^`]+)`/g, "$1")
         .replace(/\[(.*?)\]\(.*?\)/g, "$1")
+        .replace(/[*_>#~-]/g, "")
         .replace(/\s+/g, " ")
         .trim();
 }
@@ -50,86 +57,82 @@ function escapeHtml(text) {
         .replace(/'/g, "&#39;");
 }
 
-function normalizeSlug(slug) {
-    const tail = slug.split("/").pop() || slug;
-    return sanitizeInline(tail.replace(/\.md$/i, "").replace(/[._-]/g, " ")) || "未命名";
-}
-
-function extractTitle(markdown, fallbackSlug) {
-    const headingMatch = markdown.match(/^#\s+(.+)$/m);
-    if (headingMatch && headingMatch[1]) {
-        return sanitizeInline(headingMatch[1]);
+function extractTitle(markdown, fallback) {
+    const match = markdown.match(/^#\s+(.+)$/m);
+    if (match?.[1]) {
+        return sanitizeInline(match[1]);
     }
 
-    const candidate = markdown
+    const firstLine = markdown
         .split(/\r?\n/)
         .map((line) => sanitizeInline(line))
-        .find((line) => line.length > 6);
+        .find((line) => line.length > 4);
 
-    return candidate || normalizeSlug(fallbackSlug);
+    return firstLine || fallback;
 }
 
 function extractExcerpt(markdown) {
-    const cleaned = markdown
-        .replace(/```[\s\S]*?```/g, "")
-        .replace(/^#\s+.+$/gm, "")
-        .replace(/^>\s?/gm, "")
-        .replace(/[\-*+]\s+/g, "")
-        .replace(/\[(.*?)\]\(.*?\)/g, "$1")
-        .replace(/\r?\n/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
+    const cleaned = sanitizeInline(
+        markdown
+            .replace(/^#\s+.+$/gm, "")
+            .replace(/^>\s?/gm, "")
+            .replace(/^[-*+]\s+/gm, "")
+            .replace(/\r?\n/g, " ")
+    );
 
     if (!cleaned) {
-        return "暂无摘要，点击进入阅读全文。";
+        return "暂无摘要。";
     }
 
-    return cleaned.length > 108 ? `${cleaned.slice(0, 108)}...` : cleaned;
+    return cleaned.length > 110 ? `${cleaned.slice(0, 110)}…` : cleaned;
 }
 
-function parseDateFromSlug(slug) {
-    const match = slug.match(/(\d{4})\.(\d{1,2})\.(\d{1,2})/);
+function parseDateFromKey(key) {
+    const match = key.match(/(\d{4})\.(\d{1,2})\.(\d{1,2})/);
     if (!match) {
         return null;
     }
 
-    const year = Number(match[1]);
-    const month = Number(match[2]);
-    const day = Number(match[3]);
-    const date = new Date(year, month - 1, day);
-
-    if (Number.isNaN(date.getTime())) {
-        return null;
-    }
-
-    return date;
+    const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+    return Number.isNaN(date.getTime()) ? null : date;
 }
 
 function formatDate(date) {
     if (!date) {
-        return "未标注日期";
+        return "Undated";
     }
-    return new Intl.DateTimeFormat("zh-CN", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit"
-    }).format(date);
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}.${month}.${day}`;
+}
+
+function getYearSpan(items) {
+    const dated = items.filter((item) => item.date);
+    if (!dated.length) {
+        return "--";
+    }
+
+    const years = dated.map((item) => item.date.getFullYear()).sort((a, b) => a - b);
+    return years[0] === years[years.length - 1] ? String(years[0]) : `${years[0]}–${years[years.length - 1]}`;
 }
 
 function buildContentIndex() {
     const markdownContent = window.markdownContent || {};
-    const entries = Object.entries(markdownContent)
+
+    state.allItems = Object.entries(markdownContent)
         .map(([key, markdown]) => {
-            const [category, ...rest] = key.split("/");
+            const [category] = key.split("/");
             if (!CATEGORY_META[category]) {
                 return null;
             }
 
-            const slug = rest.join("/");
-            const title = extractTitle(markdown, slug);
+            const title = extractTitle(markdown, key.split("/").pop() || key);
             const excerpt = extractExcerpt(markdown);
-            const date = parseDateFromSlug(slug);
+            const date = parseDateFromKey(key);
             const words = sanitizeInline(markdown).length;
+            const searchText = `${title} ${excerpt} ${CATEGORY_META[category].label}`.toLowerCase();
 
             return {
                 key,
@@ -139,137 +142,180 @@ function buildContentIndex() {
                 markdown,
                 date,
                 words,
-                sortTime: date ? date.getTime() : 0,
-                searchText: `${title} ${excerpt} ${CATEGORY_META[category].label}`.toLowerCase()
+                searchText,
+                sortTime: date ? date.getTime() : -1
             };
         })
         .filter(Boolean)
         .sort((a, b) => {
-            if (a.category !== b.category) {
-                return CATEGORY_META[a.category].priority - CATEGORY_META[b.category].priority;
-            }
-            if (a.category === "articles") {
+            if (a.sortTime !== b.sortTime) {
                 return b.sortTime - a.sortTime;
+            }
+            if (CATEGORY_META[a.category].order !== CATEGORY_META[b.category].order) {
+                return CATEGORY_META[a.category].order - CATEGORY_META[b.category].order;
             }
             return a.title.localeCompare(b.title, "zh-CN");
         });
 
-    state.allItems = entries;
-    state.articleItems = entries
-        .filter((item) => item.category === "articles")
-        .sort((a, b) => b.sortTime - a.sortTime || a.title.localeCompare(b.title, "zh-CN"));
+    state.articleItems = state.allItems.filter((item) => item.category === "articles");
 }
 
-function createCard(item, compact = false) {
-    const safeTitle = escapeHtml(item.title);
-    const safeExcerpt = escapeHtml(item.excerpt);
-    const safeMeta = `${formatDate(item.date)} · ${item.words}字`;
+function renderHero() {
+    const latest = state.articleItems[0] || state.allItems[0];
 
-    const card = document.createElement("article");
-    card.className = "card reveal";
-    card.innerHTML = `
-        <span class="card-tag">${CATEGORY_META[item.category].label}</span>
-        <h3>${safeTitle}</h3>
-        <p>${safeExcerpt}</p>
-        <div class="card-meta">
-            <span>${safeMeta}</span>
-            <button class="card-open" data-open="${item.key}">阅读</button>
-        </div>
-    `;
+    elements.metricTotal.textContent = String(state.allItems.length);
+    elements.metricArticles.textContent = String(state.articleItems.length);
+    elements.metricYears.textContent = getYearSpan(state.allItems);
 
-    if (compact) {
-        card.style.minHeight = "216px";
-    }
-
-    return card;
-}
-
-function renderStats() {
-    elements.statTotal.textContent = String(state.allItems.length);
-    elements.statArticles.textContent = String(state.allItems.filter((item) => item.category === "articles").length);
-    elements.statNotes.textContent = String(state.allItems.filter((item) => item.category === "notes").length);
-}
-
-function renderFeatured() {
-    elements.featuredGrid.innerHTML = "";
-
-    const picks = state.articleItems.slice(0, 3);
-    if (!picks.length) {
-        elements.featuredGrid.innerHTML = '<div class="empty-state">还没有可展示的文章。</div>';
+    if (!latest) {
+        elements.heroFeature.innerHTML = '<p class="feature-excerpt">暂无内容。</p>';
         return;
     }
 
-    picks.forEach((item, index) => {
-        const card = createCard(item, true);
-        card.style.setProperty("--delay", `${index * 80}ms`);
-        elements.featuredGrid.appendChild(card);
-    });
+    elements.heroFeature.innerHTML = `
+        <span class="feature-tag">Latest</span>
+        <h2 class="feature-title">${escapeHtml(latest.title)}</h2>
+        <p class="feature-excerpt">${escapeHtml(latest.excerpt)}</p>
+        <div class="feature-foot">
+            <time>${formatDate(latest.date)} · ${latest.words}字</time>
+            <button class="text-button" data-open="${latest.key}">展开</button>
+        </div>
+    `;
+}
 
-    observeReveals();
+function renderSelected() {
+    const primary = state.articleItems[0] || state.allItems[0];
+    const secondary = state.articleItems.slice(1, 6);
+
+    if (primary) {
+        elements.selectedPrimary.innerHTML = `
+            <article class="feature-panel reveal">
+                <span class="feature-tag">Selected</span>
+                <h3 class="feature-title">${escapeHtml(primary.title)}</h3>
+                <p class="feature-excerpt">${escapeHtml(primary.excerpt)}</p>
+                <div class="feature-foot">
+                    <time>${formatDate(primary.date)} · ${primary.words}字</time>
+                    <button class="text-button" data-open="${primary.key}">阅读</button>
+                </div>
+            </article>
+        `;
+    } else {
+        elements.selectedPrimary.innerHTML = '<p class="empty-state">暂无可展示内容。</p>';
+    }
+
+    if (!secondary.length) {
+        elements.selectedList.innerHTML = '<div class="empty-state">还没有更多文章。</div>';
+        return;
+    }
+
+    elements.selectedList.innerHTML = secondary
+        .map(
+            (item) => `
+            <article class="headline-item reveal">
+                <div class="headline-meta">${formatDate(item.date)}</div>
+                <button class="headline-open" data-open="${item.key}">
+                    <span class="headline-title">${escapeHtml(item.title)}</span>
+                    <span class="feature-excerpt">${escapeHtml(item.excerpt)}</span>
+                </button>
+            </article>
+        `
+        )
+        .join("");
+}
+
+function renderSpectrum() {
+    const categories = Object.entries(CATEGORY_META).filter(([category]) => state.allItems.some((item) => item.category === category));
+
+    elements.spectrumGrid.innerHTML = categories
+        .map(
+            ([category, meta], index) => `
+            <article class="band reveal" style="--delay:${index * 60}ms">
+                <p class="band-index">0${index + 1}</p>
+                <h3>${meta.label}</h3>
+                <p>${meta.summary}</p>
+                <span class="band-count">${state.allItems.filter((item) => item.category === category).length} entries</span>
+            </article>
+        `
+        )
+        .join("");
 }
 
 function renderFilterTabs() {
-    elements.filterTabs.innerHTML = "";
-
     const categories = ["all", ...Object.keys(CATEGORY_META).filter((category) => state.allItems.some((item) => item.category === category))];
 
-    categories.forEach((category) => {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = `filter-btn ${category === state.activeFilter ? "active" : ""}`;
-        btn.dataset.filter = category;
-        btn.textContent = category === "all" ? "全部" : CATEGORY_META[category].label;
-        elements.filterTabs.appendChild(btn);
-    });
+    elements.filterTabs.innerHTML = categories
+        .map((category) => {
+            const label = category === "all" ? "全部" : CATEGORY_META[category].label;
+            const active = state.activeFilter === category ? "active" : "";
+            return `<button class="filter-btn ${active}" data-filter="${category}">${label}</button>`;
+        })
+        .join("");
 }
 
-function getFilteredItems() {
-    const normalizedQuery = state.query.trim().toLowerCase();
+function getVisibleItems() {
+    const query = state.query.trim().toLowerCase();
 
     return state.allItems.filter((item) => {
-        const byCategory = state.activeFilter === "all" || item.category === state.activeFilter;
-        const byQuery = !normalizedQuery || item.searchText.includes(normalizedQuery);
-        return byCategory && byQuery;
+        const matchCategory = state.activeFilter === "all" || item.category === state.activeFilter;
+        const matchQuery = !query || item.searchText.includes(query);
+        return matchCategory && matchQuery;
     });
 }
 
-function renderLibrary() {
-    elements.libraryGrid.innerHTML = "";
+function renderArchive() {
+    const visibleItems = getVisibleItems();
 
-    const visible = getFilteredItems();
-    if (!visible.length) {
-        elements.libraryGrid.innerHTML = '<div class="empty-state">没有匹配结果，换个关键词试试。</div>';
+    if (!visibleItems.length) {
+        elements.archiveList.innerHTML = '<div class="empty-state">没有找到匹配结果。</div>';
         return;
     }
 
-    visible.forEach((item, index) => {
-        const card = createCard(item);
-        card.style.setProperty("--delay", `${Math.min(index, 8) * 60}ms`);
-        elements.libraryGrid.appendChild(card);
-    });
-
-    observeReveals();
+    elements.archiveList.innerHTML = visibleItems
+        .map(
+            (item, index) => `
+            <article class="archive-row reveal" style="--delay:${Math.min(index, 8) * 45}ms">
+                <div class="archive-meta">${CATEGORY_META[item.category].label}</div>
+                <div class="archive-main">
+                    <h3>${escapeHtml(item.title)}</h3>
+                    <p>${escapeHtml(item.excerpt)}</p>
+                </div>
+                <div class="archive-side">
+                    <span>${formatDate(item.date)}</span>
+                    <button class="archive-open" data-open="${item.key}">Open</button>
+                </div>
+            </article>
+        `
+        )
+        .join("");
 }
 
-function openReader(itemKey) {
-    const item = state.allItems.find((entry) => entry.key === itemKey);
+function updateReaderProgress() {
+    const { scrollTop, scrollHeight, clientHeight } = elements.readerBody;
+    const progress = scrollHeight <= clientHeight ? 100 : (scrollTop / (scrollHeight - clientHeight)) * 100;
+    elements.readerProgressBar.style.width = `${Math.max(0, Math.min(progress, 100))}%`;
+}
+
+function openReader(key) {
+    const item = state.allItems.find((entry) => entry.key === key);
     if (!item) {
         return;
     }
 
+    elements.readerMeta.textContent = `${CATEGORY_META[item.category].label} · ${formatDate(item.date)} · ${item.words}字`;
     elements.readerTitle.textContent = item.title;
-    elements.readerMeta.textContent = `${CATEGORY_META[item.category].label} · ${formatDate(item.date)}`;
 
     if (typeof marked !== "undefined") {
         marked.setOptions({ gfm: true, breaks: true });
         elements.readerBody.innerHTML = marked.parse(item.markdown);
     } else {
-        elements.readerBody.innerHTML = `<pre>${item.markdown}</pre>`;
+        elements.readerBody.innerHTML = `<pre>${escapeHtml(item.markdown)}</pre>`;
     }
 
     elements.reader.classList.add("active");
     elements.reader.setAttribute("aria-hidden", "false");
     document.body.style.overflow = "hidden";
+    elements.readerBody.scrollTop = 0;
+    updateReaderProgress();
 }
 
 function closeReader() {
@@ -279,30 +325,36 @@ function closeReader() {
 }
 
 function setTheme(theme) {
+    const themeMeta = document.querySelector('meta[name="theme-color"]');
+
     if (theme === "dark") {
         document.documentElement.setAttribute("data-theme", "dark");
         elements.themeToggle.setAttribute("aria-pressed", "true");
+        elements.themeToggle.textContent = "Light";
+        themeMeta?.setAttribute("content", "#0c0e12");
     } else {
         document.documentElement.removeAttribute("data-theme");
         elements.themeToggle.setAttribute("aria-pressed", "false");
+        elements.themeToggle.textContent = "Dark";
+        themeMeta?.setAttribute("content", "#f1ece4");
     }
     localStorage.setItem("theme", theme);
 }
 
 function initTheme() {
     const savedTheme = localStorage.getItem("theme");
-    const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    setTheme(savedTheme || (systemDark ? "dark" : "light"));
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    setTheme(savedTheme || (prefersDark ? "dark" : "light"));
 
     elements.themeToggle.addEventListener("click", () => {
-        const isDark = document.documentElement.getAttribute("data-theme") === "dark";
-        setTheme(isDark ? "light" : "dark");
+        const current = document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+        setTheme(current === "dark" ? "light" : "dark");
     });
 }
 
 function observeReveals() {
-    const reveals = document.querySelectorAll(".reveal:not(.is-visible)");
-    if (!reveals.length) {
+    const targets = document.querySelectorAll(".reveal:not(.is-visible)");
+    if (!targets.length) {
         return;
     }
 
@@ -318,7 +370,34 @@ function observeReveals() {
         { threshold: 0.12 }
     );
 
-    reveals.forEach((element) => observer.observe(element));
+    targets.forEach((target) => observer.observe(target));
+}
+
+function bindSectionTracking() {
+    const sections = ["selected", "spectrum", "archive", "method"];
+    const navLinks = [...document.querySelectorAll(".nav-link")];
+
+    const observer = new IntersectionObserver(
+        (entries) => {
+            entries.forEach((entry) => {
+                if (!entry.isIntersecting) {
+                    return;
+                }
+
+                navLinks.forEach((link) => link.classList.remove("active"));
+                const active = navLinks.find((link) => link.getAttribute("href") === `#${entry.target.id}`);
+                active?.classList.add("active");
+            });
+        },
+        { threshold: 0.35 }
+    );
+
+    sections.forEach((id) => {
+        const section = document.getElementById(id);
+        if (section) {
+            observer.observe(section);
+        }
+    });
 }
 
 function bindEvents() {
@@ -343,12 +422,14 @@ function bindEvents() {
 
         state.activeFilter = button.dataset.filter;
         renderFilterTabs();
-        renderLibrary();
+        renderArchive();
+        observeReveals();
     });
 
     elements.searchInput.addEventListener("input", (event) => {
         state.query = event.target.value;
-        renderLibrary();
+        renderArchive();
+        observeReveals();
     });
 
     document.addEventListener("click", (event) => {
@@ -360,6 +441,7 @@ function bindEvents() {
 
     elements.readerBackdrop.addEventListener("click", closeReader);
     elements.readerClose.addEventListener("click", closeReader);
+    elements.readerBody.addEventListener("scroll", updateReaderProgress);
 
     document.addEventListener("keydown", (event) => {
         if (event.key === "Escape" && elements.reader.classList.contains("active")) {
@@ -372,11 +454,13 @@ function init() {
     elements.footerYear.textContent = String(new Date().getFullYear());
     initTheme();
     buildContentIndex();
-    renderStats();
-    renderFeatured();
+    renderHero();
+    renderSelected();
+    renderSpectrum();
     renderFilterTabs();
-    renderLibrary();
+    renderArchive();
     bindEvents();
+    bindSectionTracking();
     observeReveals();
 }
 
