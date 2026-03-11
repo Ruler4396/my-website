@@ -1,5 +1,12 @@
 # PJT-0005 · PROJECT_CHANGELOG
 
+## 2026-03-10
+- 首页友情链接新增 `ZeroClaw 管理台`，统一指向 `https://aqsk.top/admin`，便于从主站直接进入管理后台。
+- 管理台入口规范化：`http://8.138.1.39/admin`、`https://8.138.1.39/admin` 与 `http://aqsk.top/admin` 现统一 301 到 `https://aqsk.top/admin`，减少继续使用 IP 入口。
+- 关闭遗留 `18990` 预览 http.server，避免临时预览页继续暴露在公网。
+- 宿主机已启用 UFW：默认拒绝入站，仅放行 `22/tcp`、`80/tcp`、`443/tcp`。
+- 主站 Nginx 安全头补强：新增 `Strict-Transport-Security`、兼容型 `Content-Security-Policy` 与 `Permissions-Policy`，并通过 reload 低冲击生效。
+
 ## 2026-03-09
 - 微调备案区样式：压缩公网安备与工信部备案行距，优化图标尺寸与底部对齐，移动端允许更自然换行。
 - 网站底部新增公安备案条目：`粤公网安备44090402441277号`，位于工信部备案号上方，并接入公安备案跳转链接。
