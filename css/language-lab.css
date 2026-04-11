@@ -1,0 +1,683 @@
+:root {
+    --bg: #f6efe4;
+    --bg-strong: #efe2cf;
+    --panel: rgba(255, 250, 242, 0.78);
+    --panel-strong: rgba(255, 252, 247, 0.9);
+    --text: #171411;
+    --muted: #655b4f;
+    --line: rgba(23, 20, 17, 0.12);
+    --line-strong: rgba(23, 20, 17, 0.22);
+    --accent: #1a56db;
+    --accent-2: #9a6338;
+    --shell: min(1260px, calc(100vw - 44px));
+    --display: "Cormorant Garamond", "Noto Serif SC", serif;
+    --body: "Noto Sans SC", "PingFang SC", sans-serif;
+    --ui: "IBM Plex Sans", "Noto Sans SC", sans-serif;
+    --mono: "IBM Plex Mono", monospace;
+    --shadow: 0 22px 60px rgba(52, 34, 17, 0.08);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: var(--body);
+    color: var(--text);
+    background:
+        radial-gradient(circle at 14% 0%, rgba(26, 86, 219, 0.12), transparent 32%),
+        radial-gradient(circle at 100% 10%, rgba(154, 99, 56, 0.14), transparent 28%),
+        linear-gradient(180deg, var(--bg), var(--bg-strong));
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+        linear-gradient(var(--line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 32px 32px;
+    mask-image: radial-gradient(circle at center, black 48%, transparent 100%);
+    opacity: 0.34;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+button,
+input,
+select {
+    font: inherit;
+}
+
+.lab-shell {
+    width: var(--shell);
+    margin: 0 auto;
+}
+
+.lab-grain,
+.lab-orbit {
+    position: fixed;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.lab-grain {
+    inset: 0;
+    opacity: 0.22;
+    background-image: radial-gradient(rgba(23, 20, 17, 0.08) 0.5px, transparent 0.5px);
+    background-size: 10px 10px;
+}
+
+.lab-orbit {
+    width: 420px;
+    height: 420px;
+    border-radius: 50%;
+    filter: blur(30px);
+    opacity: 0.3;
+}
+
+.lab-orbit-left {
+    top: 80px;
+    left: -120px;
+    background: radial-gradient(circle, rgba(26, 86, 219, 0.18), transparent 70%);
+}
+
+.lab-orbit-right {
+    top: 240px;
+    right: -140px;
+    background: radial-gradient(circle, rgba(154, 99, 56, 0.2), transparent 70%);
+}
+
+.lab-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    backdrop-filter: blur(20px);
+    background: color-mix(in srgb, var(--bg) 84%, transparent);
+    border-bottom: 1px solid var(--line);
+}
+
+.lab-header-inner {
+    min-height: 72px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 18px;
+    align-items: center;
+}
+
+.lab-brand {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 12px;
+}
+
+.lab-brand-code {
+    font-family: var(--mono);
+    font-size: 0.86rem;
+    letter-spacing: 0.18em;
+    color: var(--accent);
+}
+
+.lab-brand-name {
+    font-family: var(--ui);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.lab-nav {
+    justify-self: center;
+    display: inline-flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    font-family: var(--ui);
+    color: var(--muted);
+}
+
+.lab-nav a,
+.lab-back,
+.hero-action,
+.doc-link {
+    position: relative;
+}
+
+.lab-nav a::after,
+.lab-back::after,
+.hero-action::after,
+.doc-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -3px;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 180ms ease;
+}
+
+.lab-nav a:hover::after,
+.lab-back:hover::after,
+.hero-action:hover::after,
+.doc-link:hover::after {
+    transform: scaleX(1);
+}
+
+.lab-back {
+    font-family: var(--ui);
+    color: var(--muted);
+}
+
+.hero {
+    padding: 56px 0 34px;
+}
+
+.hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+    gap: 42px;
+    align-items: start;
+}
+
+.section-kicker {
+    margin: 0 0 12px;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+}
+
+.hero h1,
+.section-head h2,
+.glyph-card h3,
+.lexicon-heading,
+.topic-card h3,
+.example-card h4,
+.text-card h4 {
+    font-family: var(--display);
+    letter-spacing: -0.04em;
+}
+
+.hero h1 {
+    margin: 0;
+    font-size: clamp(3.2rem, 8vw, 6.8rem);
+    line-height: 0.92;
+}
+
+.hero-summary {
+    max-width: 38ch;
+    margin: 20px 0 0;
+    color: var(--muted);
+    font-size: 1.05rem;
+    line-height: 1.9;
+}
+
+.hero-actions {
+    margin-top: 28px;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.hero-action {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--ui);
+    color: var(--muted);
+}
+
+.hero-action-primary {
+    color: var(--text);
+}
+
+.hero-panel,
+.doc-card,
+.phonology-card,
+.glyph-card,
+.lexicon-row,
+.example-card,
+.text-card {
+    border: 1px solid var(--line-strong);
+    background: linear-gradient(180deg, var(--panel-strong), var(--panel));
+    box-shadow: var(--shadow);
+}
+
+.hero-panel {
+    padding: 28px;
+    display: grid;
+    gap: 26px;
+    clip-path: polygon(0 0, calc(100% - 26px) 0, 100% 26px, 100% 100%, 0 100%);
+}
+
+.hero-panel-copy p,
+.section-side,
+.doc-card p,
+.phonology-card p,
+.topic-card p,
+.example-meta,
+.text-summary,
+.lexicon-definition {
+    color: var(--muted);
+}
+
+.panel-tag {
+    display: inline-block;
+    margin-bottom: 12px;
+    font-family: var(--mono);
+    font-size: 0.76rem;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+}
+
+.hero-metrics {
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.hero-metrics div {
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+}
+
+.hero-metrics dt {
+    font-family: var(--ui);
+    font-size: 0.82rem;
+    color: var(--muted);
+}
+
+.hero-metrics dd {
+    margin: 10px 0 0;
+    font-family: var(--display);
+    font-size: 1.8rem;
+}
+
+.section {
+    padding: 34px 0 58px;
+}
+
+.section-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(240px, 0.7fr);
+    gap: 20px;
+    align-items: end;
+    margin-bottom: 24px;
+}
+
+.section-head-stack {
+    align-items: start;
+}
+
+.section-head h2 {
+    margin: 0;
+    font-size: clamp(2rem, 5vw, 3.4rem);
+}
+
+.section-side {
+    margin: 0;
+    line-height: 1.8;
+}
+
+.doc-grid,
+.glyph-grid {
+    display: grid;
+    gap: 18px;
+}
+
+.doc-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-bottom: 24px;
+}
+
+.doc-card,
+.phonology-card,
+.glyph-card,
+.text-card {
+    padding: 22px;
+}
+
+.doc-card h3,
+.phonology-card h3,
+.glyph-card h3,
+.example-column h3,
+.text-column h3 {
+    margin: 0 0 12px;
+    font-size: 1.55rem;
+}
+
+.doc-link {
+    display: inline-flex;
+    margin-top: 18px;
+    font-family: var(--ui);
+    color: var(--accent);
+}
+
+.phonology-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
+    gap: 18px;
+}
+
+.sound-columns {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.chip-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.sound-chip {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.45);
+    font-family: var(--ui);
+    font-size: 0.88rem;
+}
+
+.sound-chip code {
+    font-family: var(--mono);
+    color: var(--accent);
+}
+
+.topic-list {
+    display: grid;
+    gap: 12px;
+}
+
+.topic-card {
+    padding: 14px 16px;
+    border-top: 1px solid var(--line);
+}
+
+.topic-card:first-child {
+    border-top: 0;
+    padding-top: 0;
+}
+
+.topic-card h3 {
+    margin: 0 0 8px;
+    font-size: 1.28rem;
+}
+
+.topic-linked {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.topic-linked span {
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: rgba(26, 86, 219, 0.08);
+    font-family: var(--mono);
+    font-size: 0.76rem;
+    color: var(--accent);
+}
+
+.glyph-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.glyph-card {
+    display: grid;
+    grid-template-columns: 72px minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+}
+
+.glyph-card img {
+    width: 72px;
+    height: 72px;
+    display: block;
+}
+
+.glyph-card h3 {
+    margin: 0 0 6px;
+    font-size: 1.3rem;
+}
+
+.glyph-meta {
+    display: inline-flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-family: var(--ui);
+    font-size: 0.82rem;
+    color: var(--muted);
+}
+
+.lexicon-controls {
+    display: flex;
+    justify-content: end;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.search-field,
+.filter-field {
+    display: grid;
+    gap: 8px;
+    min-width: 220px;
+    font-family: var(--ui);
+    font-size: 0.88rem;
+    color: var(--muted);
+}
+
+.search-field input,
+.filter-field select {
+    height: 44px;
+    padding: 0 14px;
+    border: 1px solid var(--line-strong);
+    background: rgba(255, 255, 255, 0.64);
+    color: var(--text);
+}
+
+.lexicon-meta {
+    margin-bottom: 14px;
+    font-family: var(--ui);
+    color: var(--muted);
+}
+
+.lexicon-table {
+    border-top: 1px solid var(--line);
+}
+
+.lexicon-row {
+    display: grid;
+    grid-template-columns: minmax(260px, 0.9fr) minmax(180px, 0.5fr) minmax(0, 1fr);
+    gap: 18px;
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--line);
+}
+
+.lexicon-heading {
+    margin: 0 0 10px;
+    font-size: 1.6rem;
+}
+
+.lexicon-native {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.word-native {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    min-height: 32px;
+}
+
+.word-native img {
+    width: 26px;
+    height: 26px;
+    display: block;
+}
+
+.word-fallback {
+    font-family: var(--mono);
+    font-size: 0.84rem;
+    color: var(--muted);
+}
+
+.lexicon-romanized {
+    font-family: var(--mono);
+    color: var(--accent);
+}
+
+.lexicon-chip-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
+.chip {
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: rgba(23, 20, 17, 0.06);
+    font-family: var(--ui);
+    font-size: 0.76rem;
+    color: var(--muted);
+}
+
+.corpus-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 0.96fr) minmax(320px, 1.04fr);
+    gap: 20px;
+}
+
+.example-list,
+.text-list {
+    display: grid;
+    gap: 14px;
+}
+
+.example-card {
+    padding: 20px;
+}
+
+.example-card h4,
+.text-card h4 {
+    margin: 0 0 12px;
+    font-size: 1.35rem;
+}
+
+.example-native,
+.sentence-native {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.sentence-native .word-native {
+    margin-right: 2px;
+}
+
+.sentence-line {
+    margin: 8px 0 0;
+}
+
+.sentence-label {
+    display: inline-block;
+    min-width: 82px;
+    font-family: var(--mono);
+    font-size: 0.76rem;
+    color: var(--accent);
+}
+
+.text-card {
+    display: grid;
+    gap: 12px;
+}
+
+.text-card article {
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+}
+
+.text-card article:first-of-type {
+    border-top: 0;
+    padding-top: 0;
+}
+
+.lab-footer {
+    padding: 0 0 30px;
+}
+
+.lab-footer-inner {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-family: var(--ui);
+}
+
+@media (max-width: 1120px) {
+    .doc-grid,
+    .glyph-grid,
+    .phonology-grid,
+    .corpus-layout,
+    .hero-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .lexicon-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 760px) {
+    .lab-header-inner,
+    .section-head {
+        grid-template-columns: 1fr;
+    }
+
+    .lab-nav {
+        justify-self: start;
+    }
+
+    .doc-grid,
+    .glyph-grid,
+    .sound-columns {
+        grid-template-columns: 1fr;
+    }
+
+    .hero {
+        padding-top: 34px;
+    }
+
+    .hero h1 {
+        font-size: clamp(2.8rem, 16vw, 4.4rem);
+    }
+
+    .lexicon-controls {
+        justify-content: start;
+    }
+}

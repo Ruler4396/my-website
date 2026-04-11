@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Neral — Language Lab</title>
+    <meta name="description" content="Project Neral 的语言本体、字形、词典、语法与例句评审页。">
+    <meta name="theme-color" content="#f6efe4">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/language-lab.css?v=20260411a">
+</head>
+<body>
+    <div class="lab-grain" aria-hidden="true"></div>
+    <div class="lab-orbit lab-orbit-left" aria-hidden="true"></div>
+    <div class="lab-orbit lab-orbit-right" aria-hidden="true"></div>
+
+    <header class="lab-header">
+        <div class="lab-shell lab-header-inner">
+            <a class="lab-brand" href="#top">
+                <span class="lab-brand-code">NERAL</span>
+                <span class="lab-brand-name">Language Lab</span>
+            </a>
+            <nav class="lab-nav" aria-label="页面导航">
+                <a href="#system">System</a>
+                <a href="#glyphs">Glyphs</a>
+                <a href="#lexicon">Lexicon</a>
+                <a href="#corpus">Corpus</a>
+            </nav>
+            <a class="lab-back" href="index.html">Back</a>
+        </div>
+    </header>
+
+    <main id="top">
+        <section class="hero">
+            <div class="lab-shell hero-grid">
+                <div class="hero-copy">
+                    <p class="section-kicker">INTERNAL CODE NAME</p>
+                    <h1>Project Neral</h1>
+                    <p class="hero-summary">
+                        一门从零设计、面向真实表达的新语言。当前页面只承担评审与冻结工作：
+                        先把音系、文字、语法、词库和例句立住，再决定如何正式接入主站。
+                    </p>
+                    <div class="hero-actions">
+                        <a href="#lexicon" class="hero-action hero-action-primary">进入词典</a>
+                        <a href="#glyphs" class="hero-action">查看字形</a>
+                    </div>
+                </div>
+                <aside class="hero-panel">
+                    <div class="hero-panel-copy">
+                        <span class="panel-tag">WORKING DRAFT</span>
+                        <p>语义标记在前，音符链在后。所有原生词都保留唯一标准转写，确保网站展示、搜索和未来输入体系可持续扩展。</p>
+                    </div>
+                    <dl class="hero-metrics" id="hero-metrics"></dl>
+                </aside>
+            </div>
+        </section>
+
+        <section class="section" id="system">
+            <div class="lab-shell">
+                <div class="section-head">
+                    <div>
+                        <p class="section-kicker">SYSTEM SUMMARY</p>
+                        <h2>设计文档与结构总览</h2>
+                    </div>
+                    <p class="section-side">这是站内独立流水线生成的数据视图，不使用现有 `content/` 文章索引。</p>
+                </div>
+                <div class="doc-grid" id="doc-grid"></div>
+                <div class="phonology-grid">
+                    <article class="phonology-card">
+                        <p class="panel-tag">PHONOLOGY</p>
+                        <h3>音系</h3>
+                        <p id="phonology-summary"></p>
+                        <div class="sound-columns">
+                            <div>
+                                <h4>辅音</h4>
+                                <div class="chip-grid" id="consonant-grid"></div>
+                            </div>
+                            <div>
+                                <h4>元音</h4>
+                                <div class="chip-grid" id="vowel-grid"></div>
+                            </div>
+                        </div>
+                    </article>
+                    <article class="phonology-card">
+                        <p class="panel-tag">GRAMMAR</p>
+                        <h3>语法主题</h3>
+                        <div class="topic-list" id="topic-list"></div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="glyphs">
+            <div class="lab-shell">
+                <div class="section-head">
+                    <div>
+                        <p class="section-kicker">SCRIPT LAYER</p>
+                        <h2>字形注册表</h2>
+                    </div>
+                    <p class="section-side">当前阶段使用 SVG 字形，稳定后再收敛成字体资源。</p>
+                </div>
+                <div class="glyph-grid" id="glyph-grid"></div>
+            </div>
+        </section>
+
+        <section class="section" id="lexicon">
+            <div class="lab-shell">
+                <div class="section-head section-head-stack">
+                    <div>
+                        <p class="section-kicker">LEXICON</p>
+                        <h2>词典与检索</h2>
+                    </div>
+                    <div class="lexicon-controls">
+                        <label class="search-field" for="lexicon-search">
+                            <span>Search</span>
+                            <input type="search" id="lexicon-search" placeholder="搜索转写、中文释义或原生形式">
+                        </label>
+                        <label class="filter-field" for="pos-filter">
+                            <span>POS</span>
+                            <select id="pos-filter">
+                                <option value="all">全部</option>
+                            </select>
+                        </label>
+                    </div>
+                </div>
+                <div class="lexicon-meta" id="lexicon-meta"></div>
+                <div class="lexicon-table" id="lexicon-table"></div>
+            </div>
+        </section>
+
+        <section class="section" id="corpus">
+            <div class="lab-shell">
+                <div class="section-head">
+                    <div>
+                        <p class="section-kicker">CORPUS</p>
+                        <h2>例句与短文本</h2>
+                    </div>
+                    <p class="section-side">例句优先覆盖日常表达、叙事和说明性结构。</p>
+                </div>
+                <div class="corpus-layout">
+                    <div class="example-column">
+                        <h3>例句</h3>
+                        <div class="example-list" id="example-list"></div>
+                    </div>
+                    <div class="text-column">
+                        <h3>短文本</h3>
+                        <div class="text-list" id="text-list"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="lab-footer">
+        <div class="lab-shell lab-footer-inner">
+            <p>Project Neral · 静态评审页</p>
+            <p>构建脚本：`node build-language.js` · 数据输出：`js/language-data.js`</p>
+        </div>
+    </footer>
+
+    <script src="js/language-data.js?v=20260411a"></script>
+    <script src="js/language-lab.js?v=20260411a"></script>
+</body>
+</html>
