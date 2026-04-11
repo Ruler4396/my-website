@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="time">
+    <rect width="120" height="120" rx="22" fill="#fbf5e8"/>
+    <path d="M60 16 L92 42 L80 96 L40 96 L28 42 Z" fill="#f4e8c8" stroke="#1f1b16" stroke-width="6"/>
+    <path d="M60 34 L60 86 M38 60 L82 60" stroke="#1f46ff" stroke-width="8" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="craft">
+    <rect width="120" height="120" rx="22" fill="#fbf5e8"/>
+    <path d="M22 62 C30 30, 48 22, 62 22 C78 22, 94 34, 98 60 C90 88, 74 98, 56 98 C40 98, 26 88, 22 62 Z" fill="#f4e8c8" stroke="#1f1b16" stroke-width="6"/>
+    <path d="M40 46 L60 74 L80 46" stroke="#1f46ff" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
