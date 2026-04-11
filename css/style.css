@@ -12,10 +12,14 @@
     --accent-2: #8d59ff;
     --shadow: 0 24px 70px rgba(21, 18, 14, 0.08);
     --shell: min(1180px, calc(100vw - 56px));
-    --display: "Inter Tight", "Noto Sans SC", sans-serif;
+    --display: "Noto Serif SC", "Songti SC", "STSong", serif;
     --body: "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    --ui: "IBM Plex Sans", "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
     --serif: "Noto Serif SC", serif;
     --mono: "IBM Plex Mono", monospace;
+    --ui-font-threshold: 0.88rem;
+    --body-size: 1rem;
+    --body-line: 1.78;
     --radius-sm: 6px;
     --radius-md: 10px;
 }
@@ -47,6 +51,8 @@ body {
     margin: 0;
     min-height: 100vh;
     font-family: var(--body);
+    font-size: var(--body-size);
+    line-height: var(--body-line);
     color: var(--text);
     background:
         radial-gradient(circle at 12% 0%, rgba(31, 70, 255, 0.08), transparent 36%),
@@ -137,20 +143,21 @@ a {
     display: inline-flex;
     align-items: baseline;
     gap: 12px;
-    font-family: var(--display);
+    font-family: var(--ui);
 }
 
 .brand-code {
-    font-family: var(--mono);
-    font-size: 0.78rem;
-    letter-spacing: 0.16em;
+    font-family: var(--ui);
+    font-size: max(0.8rem, var(--ui-font-threshold));
+    letter-spacing: 0.08em;
+    font-weight: 600;
     color: var(--accent);
 }
 
 .brand-name {
-    font-size: 1.05rem;
+    font-size: 1.08rem;
     font-weight: 600;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.01em;
 }
 
 .header-nav {
@@ -161,7 +168,9 @@ a {
 
 .nav-link {
     position: relative;
-    font-size: 0.95rem;
+    font-family: var(--ui);
+    font-size: max(0.93rem, var(--ui-font-threshold));
+    font-weight: 500;
     color: var(--muted);
     padding: 6px 0;
     transition: color 200ms ease;
@@ -203,6 +212,8 @@ a {
     min-width: 64px;
     height: 38px;
     padding: 0 14px;
+    font-family: var(--ui);
+    font-size: max(0.86rem, var(--ui-font-threshold));
     cursor: pointer;
     transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
 }
@@ -244,9 +255,10 @@ a {
 
 .section-kicker {
     margin: 0 0 14px;
-    font-family: var(--mono);
-    font-size: 0.74rem;
-    letter-spacing: 0.18em;
+    font-family: var(--ui);
+    font-size: max(0.82rem, var(--ui-font-threshold));
+    letter-spacing: 0.08em;
+    font-weight: 500;
     color: var(--accent);
 }
 
@@ -262,7 +274,7 @@ a {
 .hero-summary {
     max-width: 36ch;
     margin: 20px 0 0;
-    font-size: clamp(1rem, 1.6vw, 1.16rem);
+    font-size: clamp(1.05rem, 1.6vw, 1.2rem);
     line-height: 1.9;
     color: var(--muted);
 }
@@ -312,9 +324,10 @@ a {
 .metric-label {
     display: block;
     margin-bottom: 12px;
-    font-family: var(--mono);
-    font-size: 0.72rem;
-    letter-spacing: 0.14em;
+    font-family: var(--ui);
+    font-size: max(0.8rem, var(--ui-font-threshold));
+    letter-spacing: 0.06em;
+    font-weight: 500;
     color: var(--muted);
 }
 
@@ -356,9 +369,10 @@ a {
 .feature-tag {
     display: inline-block;
     margin-bottom: 18px;
-    font-family: var(--mono);
-    font-size: 0.72rem;
-    letter-spacing: 0.14em;
+    font-family: var(--ui);
+    font-size: max(0.8rem, var(--ui-font-threshold));
+    letter-spacing: 0.06em;
+    font-weight: 500;
     color: var(--accent);
 }
 
@@ -372,6 +386,7 @@ a {
 
 .feature-excerpt {
     margin: 16px 0 0;
+    font-size: 1.02rem;
     line-height: 1.9;
     color: var(--muted);
 }
@@ -387,14 +402,22 @@ a {
 
 .feature-foot time,
 .headline-meta,
-.archive-meta,
 .archive-side,
 .band-count,
 .reader-meta {
-    font-family: var(--mono);
-    font-size: 0.78rem;
-    letter-spacing: 0.04em;
+    font-family: var(--ui);
+    font-size: max(0.86rem, var(--ui-font-threshold));
+    letter-spacing: 0.02em;
+    font-weight: 500;
     color: var(--muted);
+}
+
+.archive-meta {
+    font-family: var(--ui);
+    font-size: max(0.88rem, var(--ui-font-threshold));
+    letter-spacing: 0.01em;
+    font-weight: 500;
+    color: color-mix(in srgb, var(--muted) 90%, var(--text));
 }
 
 .text-button {
@@ -446,9 +469,10 @@ a {
 }
 
 .section-index {
-    font-family: var(--mono);
-    font-size: 0.8rem;
-    letter-spacing: 0.16em;
+    font-family: var(--ui);
+    font-size: max(0.82rem, var(--ui-font-threshold));
+    letter-spacing: 0.1em;
+    font-weight: 500;
     color: var(--muted);
     padding-bottom: 14px;
 }
@@ -505,7 +529,7 @@ a {
 
 .headline-title {
     font-family: var(--display);
-    font-size: 1.18rem;
+    font-size: 1.24rem;
     line-height: 1.35;
     letter-spacing: -0.03em;
 }
@@ -528,9 +552,10 @@ a {
 
 .band-index {
     margin: 0 0 22px;
-    font-family: var(--mono);
-    font-size: 0.72rem;
-    letter-spacing: 0.16em;
+    font-family: var(--ui);
+    font-size: max(0.8rem, var(--ui-font-threshold));
+    letter-spacing: 0.08em;
+    font-weight: 500;
     color: var(--muted);
 }
 
@@ -564,9 +589,10 @@ a {
 }
 
 .search-box span {
-    font-family: var(--mono);
-    font-size: 0.74rem;
-    letter-spacing: 0.16em;
+    font-family: var(--ui);
+    font-size: max(0.8rem, var(--ui-font-threshold));
+    letter-spacing: 0.08em;
+    font-weight: 500;
     color: var(--muted);
 }
 
@@ -593,9 +619,10 @@ a {
     background: transparent;
     color: var(--muted);
     cursor: pointer;
-    font-family: var(--mono);
-    font-size: 0.78rem;
-    letter-spacing: 0.12em;
+    font-family: var(--ui);
+    font-size: max(0.88rem, var(--ui-font-threshold));
+    letter-spacing: 0.02em;
+    font-weight: 500;
     transition: color 180ms ease;
 }
 
@@ -618,6 +645,7 @@ a {
 
 .archive-main p {
     margin: 10px 0 0;
+    font-size: 1.02rem;
     color: var(--muted);
     line-height: 1.8;
 }
@@ -630,9 +658,10 @@ a {
 }
 
 .archive-open {
-    font-family: var(--mono);
-    font-size: 0.78rem;
-    letter-spacing: 0.12em;
+    font-family: var(--ui);
+    font-size: max(0.88rem, var(--ui-font-threshold));
+    letter-spacing: 0.03em;
+    font-weight: 500;
 }
 
 .archive-open::after {
@@ -671,6 +700,7 @@ a {
 
 .method-copy {
     padding-top: 10px;
+    font-size: 1.02rem;
     color: var(--muted);
     line-height: 1.9;
 }
@@ -698,8 +728,9 @@ a {
     align-items: center;
     justify-content: space-between;
     gap: 20px;
+    font-family: var(--ui);
     color: var(--muted);
-    font-size: 0.92rem;
+    font-size: 0.95rem;
 }
 
 .footer-meta,
@@ -731,7 +762,7 @@ a {
     align-items: center;
     gap: 8px;
     line-height: 1.5;
-    font-size: 0.9rem;
+    font-size: 0.92rem;
     color: var(--muted);
 }
 
@@ -881,6 +912,10 @@ a {
 
 .markdown-body p {
     margin: 0 0 1.05em;
+}
+
+.reader-article .markdown-body p {
+    text-indent: 2em;
 }
 
 .markdown-body blockquote {

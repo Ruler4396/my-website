@@ -38,6 +38,51 @@ function escapeJS(str) {
         .replace(/\t/g, '\\t');
 }
 
+function normalizeArticleContent(content) {
+    const normalized = content
+        .replace(/\r\n?/g, '\n')
+        .replace(/\uFEFF/g, '')
+        .replace(/&emsp;|&#12288;|&#x3000;/gi, '')
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<\/p\s*>/gi, '\n\n')
+        .replace(/<p[^>]*>/gi, '')
+        .replace(/<\/div\s*>/gi, '\n')
+        .replace(/<div[^>]*>/gi, '')
+        .replace(/<\/?[^>\n]+>/g, '')
+        .replace(/!\[([^\]]*)\]\([^)]+\)/g, '$1')
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+        .replace(/\*\*([^*]+)\*\*/g, '$1')
+        .replace(/\*([^*\n]+)\*/g, '$1')
+        .replace(/\*/g, '')
+        .replace(/__([^_]+)__/g, '$1')
+        .replace(/`([^`]+)`/g, '$1')
+        .replace(/\[\^[^\]]+\]/g, '');
+
+    const compactLines = [];
+    let lastWasBlank = false;
+
+    for (const rawLine of normalized.split('\n')) {
+        const line = rawLine
+            .replace(/^[\u200B\u3000\s]+/, '')
+            .replace(/^>\s?/, '')
+            .replace(/^#{1,6}\s+/, '')
+            .replace(/[ \t]+$/g, '');
+
+        if (!line) {
+            if (!lastWasBlank) {
+                compactLines.push('');
+            }
+            lastWasBlank = true;
+            continue;
+        }
+
+        compactLines.push(line);
+        lastWasBlank = false;
+    }
+
+    return compactLines.join('\n').trim();
+}
+
 // 生成content-data.js
 const contentDir = path.join(__dirname, 'content');
 const markdownFiles = getMarkdownFiles(contentDir);
@@ -48,7 +93,8 @@ output += 'window.markdownContent = {\n';
 
 for (const file of markdownFiles) {
     const key = file.path.replace(/\.md$/, '');
-    output += `    '${key}': \`${escapeJS(file.content)}\`,\n`;
+    const content = key.startsWith('articles/') ? normalizeArticleContent(file.content) : file.content;
+    output += `    '${key}': \`${escapeJS(content)}\`,\n`;
 }
 
 output += '};\n';

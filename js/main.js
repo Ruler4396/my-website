@@ -38,8 +38,64 @@ const elements = {
     readerProgressBar: document.getElementById("reader-progress-bar")
 };
 
+function normalizeArticleMarkdown(markdown) {
+    const normalized = String(markdown || "")
+        .replace(/\r\n?/g, "\n")
+        .replace(/\uFEFF/g, "")
+        .replace(/&(?:emsp|nbsp|ensp|thinsp|#12288|#x3000);/gi, " ")
+        .replace(/<br\s*\/?>/gi, "\n")
+        .replace(/<\/p\s*>/gi, "\n\n")
+        .replace(/<p[^>]*>/gi, "")
+        .replace(/<\/div\s*>/gi, "\n")
+        .replace(/<div[^>]*>/gi, "")
+        .replace(/<\/?[^>\n]+>/g, "")
+        .replace(/!\[([^\]]*)\]\([^)]+\)/g, "$1")
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+        .replace(/\*\*([^*]+)\*\*/g, "$1")
+        .replace(/\*([^*\n]+)\*/g, "$1")
+        .replace(/__([^_]+)__/g, "$1")
+        .replace(/`([^`]+)`/g, "$1")
+        .replace(/\[\^[^\]]+\]/g, "")
+        .replace(/\*/g, "");
+
+    const compactLines = [];
+    let lastWasBlank = false;
+
+    for (const rawLine of normalized.split("\n")) {
+        let line = rawLine
+            .replace(/^[\u200B\u3000\s]+/, "")
+            .replace(/^>\s?/, "")
+            .replace(/^#{1,6}\s+/, "")
+            .replace(/^[\-*+]\s+/, "")
+            .replace(/^\d+\.\s+/, "")
+            .replace(/[ \t]+$/g, "");
+
+        if (/^[_-]{3,}$/.test(line)) {
+            line = "";
+        }
+
+        if (!line) {
+            if (!lastWasBlank) {
+                compactLines.push("");
+            }
+            lastWasBlank = true;
+            continue;
+        }
+
+        compactLines.push(line);
+        lastWasBlank = false;
+    }
+
+    return compactLines.join("\n").trim();
+}
+
 function sanitizeInline(text) {
-    return text
+    return String(text || "")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/&(?:emsp|nbsp|ensp|thinsp|#12288|#x3000);/gi, " ")
+        .replace(/&amp;/gi, "&")
+        .replace(/&lt;/gi, "<")
+        .replace(/&gt;/gi, ">")
         .replace(/```[\s\S]*?```/g, "")
         .replace(/`([^`]+)`/g, "$1")
         .replace(/\[(.*?)\]\(.*?\)/g, "$1")
@@ -128,10 +184,11 @@ function buildContentIndex() {
                 return null;
             }
 
-            const title = extractTitle(markdown, key.split("/").pop() || key);
-            const excerpt = extractExcerpt(markdown);
+            const normalizedMarkdown = category === "articles" ? normalizeArticleMarkdown(markdown) : markdown;
+            const title = extractTitle(normalizedMarkdown, key.split("/").pop() || key);
+            const excerpt = extractExcerpt(normalizedMarkdown);
             const date = parseDateFromKey(key);
-            const words = sanitizeInline(markdown).length;
+            const words = sanitizeInline(normalizedMarkdown).length;
             const searchText = `${title} ${excerpt} ${CATEGORY_META[category].label}`.toLowerCase();
 
             return {
@@ -139,7 +196,7 @@ function buildContentIndex() {
                 category,
                 title,
                 excerpt,
-                markdown,
+                markdown: normalizedMarkdown,
                 date,
                 words,
                 searchText,
@@ -301,6 +358,7 @@ function openReader(key) {
         return;
     }
 
+    elements.reader.classList.toggle("reader-article", item.category === "articles");
     elements.readerMeta.textContent = `${CATEGORY_META[item.category].label} · ${formatDate(item.date)} · ${item.words}字`;
     elements.readerTitle.textContent = item.title;
 
@@ -320,6 +378,7 @@ function openReader(key) {
 
 function closeReader() {
     elements.reader.classList.remove("active");
+    elements.reader.classList.remove("reader-article");
     elements.reader.setAttribute("aria-hidden", "true");
     document.body.style.overflow = "";
 }
