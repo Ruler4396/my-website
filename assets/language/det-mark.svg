@@ -1,5 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="mark">
-    <rect width="120" height="120" rx="22" fill="#fbf5e8"/>
-    <path d="M18 60 L38 22 L82 22 L102 60 L82 98 L38 98 Z" fill="#f4e8c8" stroke="#1f1b16" stroke-width="6"/>
-    <path d="M38 44 L82 44 L60 82 Z" fill="none" stroke="#1f46ff" stroke-width="8" stroke-linejoin="round"/>
+    <rect width="120" height="120" rx="22" fill="#fbf4e8"/>
+    <path d="M16 24 L104 24" stroke="rgba(23, 20, 17, 0.12)" stroke-width="2" stroke-linecap="round"/>
+    <path d="M18 92 L102 92" stroke="rgba(23, 20, 17, 0.12)" stroke-width="2" stroke-linecap="round"/>
+    <path d="M60 18 L60 102" stroke="rgba(23, 20, 17, 0.06)" stroke-width="2" stroke-dasharray="4 8" stroke-linecap="round"/>
+    <g transform="rotate(8 60 60)" opacity="0.28">
+        <path d="M26 18 L96 104" stroke="rgba(139, 90, 43, 0.12)" stroke-width="10" stroke-linecap="round"/>
+    </g>
+    <g>
+        <path d="M54 22 L54 92" fill="none" stroke="#191512" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><path d="M40 40 L78 34" fill="none" stroke="#191512" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><path d="M40 70 L74 76" fill="none" stroke="#191512" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    <g transform="translate(64 70) scale(0.34)">
+        <path d="M54 24 L54 90" fill="none" stroke="#8b5a2b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M42 42 L76 36" fill="none" stroke="#8b5a2b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M44 70 L72 74" fill="none" stroke="#8b5a2b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
 </svg>

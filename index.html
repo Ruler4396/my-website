@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ruler — 写作、阅读与资料索引</title>
-    <meta name="description" content="个人写作、阅读笔记与资料索引。">
+    <meta id="page-description" name="description" content="个人写作、阅读笔记与资料索引。">
     <meta name="theme-color" content="#0f1014">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=20260406f">
+    <link rel="stylesheet" href="css/style.css?v=20260412i">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
 </head>
 <body>
@@ -18,9 +18,9 @@
 
     <header class="site-header" id="top">
         <div class="shell header-inner">
-            <a href="#top" class="brand" aria-label="返回顶部">
-                <span class="brand-code">Ruler</span>
-                <span class="brand-name">Journal</span>
+            <a href="#top" class="brand" id="brand-link" aria-label="返回顶部">
+                <span class="brand-code" id="brand-code">Ruler</span>
+                <span class="brand-name" id="brand-name">Journal</span>
             </a>
 
             <button class="menu-toggle" id="menu-toggle" aria-label="打开导航" aria-expanded="false">
@@ -29,15 +29,18 @@
             </button>
 
             <nav class="header-nav" id="header-nav" aria-label="主导航">
-                <a href="#selected" class="nav-link">选读</a>
-                <a href="#spectrum" class="nav-link">谱系</a>
-                <a href="#archive" class="nav-link">索引</a>
-                <a href="#method" class="nav-link">方法</a>
+                <a href="#selected" class="nav-link" id="nav-selected">选读</a>
+                <a href="#spectrum" class="nav-link" id="nav-spectrum">谱系</a>
+                <a href="#archive" class="nav-link" id="nav-archive">索引</a>
+                <a href="#method" class="nav-link" id="nav-method">方法</a>
             </nav>
 
-            <button class="theme-toggle" id="theme-toggle" aria-label="切换主题" aria-pressed="false">
-                Theme
-            </button>
+            <div class="header-actions">
+                <button class="lang-toggle" id="lang-toggle" aria-label="切换语言">Neral</button>
+                <button class="theme-toggle" id="theme-toggle" aria-label="切换主题" aria-pressed="false">
+                    Theme
+                </button>
+            </div>
         </div>
     </header>
 
@@ -45,24 +48,24 @@
         <section class="hero reveal" id="hero">
             <div class="shell hero-grid">
                 <div class="hero-copy">
-                    <p class="section-kicker">Ruler / PERSONAL ARCHIVE</p>
-                    <h1>写作、阅读、索引。</h1>
-                    <p class="hero-summary">一个持续更新的个人资料站：文章、笔记、古典文本与一些记忆。</p>
+                    <p class="section-kicker" id="hero-kicker">Ruler / PERSONAL ARCHIVE</p>
+                    <h1 id="hero-title">写作、阅读、索引。</h1>
+                    <p class="hero-summary" id="hero-summary">一个持续更新的个人资料站：文章、笔记、古典文本与一些记忆。</p>
                     <div class="hero-actions">
-                        <a class="action-link action-link-primary" href="#selected">进入选读</a>
-                        <a class="action-link" href="#archive">查看全部</a>
+                        <a class="action-link action-link-primary" href="#selected" id="hero-action-primary">进入选读</a>
+                        <a class="action-link" href="#archive" id="hero-action-secondary">查看全部</a>
                     </div>
                     <div class="hero-metrics">
                         <article>
-                            <span class="metric-label">Entries</span>
+                            <span class="metric-label" id="metric-label-total">Entries</span>
                             <strong id="metric-total">0</strong>
                         </article>
                         <article>
-                            <span class="metric-label">Writing</span>
+                            <span class="metric-label" id="metric-label-articles">Writing</span>
                             <strong id="metric-articles">0</strong>
                         </article>
                         <article>
-                            <span class="metric-label">Timeline</span>
+                            <span class="metric-label" id="metric-label-years">Timeline</span>
                             <strong id="metric-years">--</strong>
                         </article>
                     </div>
@@ -71,8 +74,8 @@
                 <aside class="hero-rail">
                     <article class="hero-feature" id="hero-feature"></article>
                     <div class="hero-note">
-                        <p>少即是多，少用形容词。</p>
-                        <p>检验知识最好的方式，是尝试把它教给别人。</p>
+                        <p id="hero-note-1">少即是多，少用形容词。</p>
+                        <p id="hero-note-2">检验知识最好的方式，是尝试把它教给别人。</p>
                     </div>
                 </aside>
             </div>
@@ -83,8 +86,8 @@
                 <div class="section-head">
                     <span class="section-index">01</span>
                     <div>
-                        <p class="section-kicker">SELECTED WRITING</p>
-                        <h2>选读</h2>
+                        <p class="section-kicker" id="selected-kicker">SELECTED WRITING</p>
+                        <h2 id="selected-title">选读</h2>
                     </div>
                 </div>
                 <div class="selected-layout">
@@ -99,8 +102,8 @@
                 <div class="section-head">
                     <span class="section-index">02</span>
                     <div>
-                        <p class="section-kicker">CONTENT SPECTRUM</p>
-                        <h2>谱系</h2>
+                        <p class="section-kicker" id="spectrum-kicker">CONTENT SPECTRUM</p>
+                        <h2 id="spectrum-title">谱系</h2>
                     </div>
                 </div>
                 <div class="spectrum-grid" id="spectrum-grid"></div>
@@ -112,11 +115,11 @@
                 <div class="section-head section-head-archive">
                     <div>
                         <span class="section-index">03</span>
-                        <p class="section-kicker">FULL INDEX</p>
-                        <h2>索引</h2>
+                        <p class="section-kicker" id="archive-kicker">FULL INDEX</p>
+                        <h2 id="archive-title">索引</h2>
                     </div>
                     <label class="search-box" for="search-input">
-                        <span>Search</span>
+                        <span id="search-label">Search</span>
                         <input type="search" id="search-input" placeholder="搜索标题或关键词">
                     </label>
                 </div>
@@ -128,16 +131,16 @@
         <section class="section reveal" id="method">
             <div class="shell method-grid">
                 <div class="method-lead">
-                    <p class="section-kicker">METHOD</p>
-                    <h2>少即是多，慢就是快。</h2>
-                    <p class="method-quote">“你必须知道各个重要学科的重要理论。”</p>
+                    <p class="section-kicker" id="method-kicker">METHOD</p>
+                    <h2 id="method-title">少即是多，慢就是快。</h2>
+                    <p class="method-quote" id="method-quote">“你必须知道各个重要学科的重要理论。”</p>
                 </div>
                 <div class="method-copy">
-                    <p>这个站点不追求解释一切，只负责留下判断、索引与反复阅读的入口。</p>
+                    <p id="method-copy-lead">这个站点不追求解释一切，只负责留下判断、索引与反复阅读的入口。</p>
                     <ul>
-                        <li>写作优先于包装</li>
-                        <li>索引优先于堆叠</li>
-                        <li>节奏优先于装饰</li>
+                        <li id="method-bullet-1">写作优先于包装</li>
+                        <li id="method-bullet-2">索引优先于堆叠</li>
+                        <li id="method-bullet-3">节奏优先于装饰</li>
                     </ul>
                 </div>
             </div>
@@ -147,20 +150,20 @@
     <footer class="site-footer">
         <div class="shell footer-inner">
             <div class="footer-meta">
-                <p>© <span id="footer-year"></span> Ruler</p>
-                <div class="footer-records" aria-label="网站备案信息">
-                    <a class="footer-record footer-record-gongan" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=44090402441277" target="_blank" rel="noreferrer noopener" aria-label="粤公网安备 44090402441277 号">
-                        <img class="footer-record-icon" src="备案图标.png" alt="公安备案图标" width="18" height="20">
-                        <span>粤公网安备44090402441277号</span>
+                <p>© <span id="footer-year"></span> <span id="footer-brand">Ruler</span></p>
+                <div class="footer-records" id="footer-records" aria-label="网站备案信息">
+                    <a class="footer-record footer-record-gongan" id="footer-gongan-link" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=44090402441277" target="_blank" rel="noreferrer noopener" aria-label="粤公网安备 44090402441277 号">
+                        <img class="footer-record-icon" id="footer-gongan-icon" src="备案图标.png" alt="公安备案图标" width="18" height="20">
+                        <span id="footer-gongan-text">粤公网安备44090402441277号</span>
                     </a>
-                    <a class="footer-record" href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer noopener">粤ICP备2026022061号</a>
+                    <a class="footer-record" id="footer-beian-text" href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer noopener">粤ICP备2026022061号</a>
                 </div>
             </div>
             <div class="footer-links">
-                <a class="footer-link" href="https://aqsk.top/classroom/" target="_blank" rel="noreferrer">班级管理系统</a>
-                <a class="footer-link" href="https://aqsk.top/admin" target="_blank" rel="noreferrer">ZeroClaw 管理台</a>
-                <a class="footer-link" href="https://github.com/Ruler4396" target="_blank" rel="noreferrer">GitHub 主页</a>
-                <a class="footer-link" href="#top">Back to top</a>
+                <a class="footer-link" id="footer-link-classroom" href="https://aqsk.top/classroom/" target="_blank" rel="noreferrer">班级管理系统</a>
+                <a class="footer-link" id="footer-link-admin" href="https://aqsk.top/admin" target="_blank" rel="noreferrer">ZeroClaw 管理台</a>
+                <a class="footer-link" id="footer-link-github" href="https://github.com/Ruler4396" target="_blank" rel="noreferrer">GitHub 主页</a>
+                <a class="footer-link" id="footer-link-top" href="#top">Back to top</a>
             </div>
         </div>
     </footer>
@@ -180,7 +183,25 @@
         </article>
     </div>
 
-    <script src="js/content-data.js?v=20260406f"></script>
-    <script src="js/main.js?v=20260406f"></script>
+    <div class="lang-modal" id="lang-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="lang-modal-title">
+        <button class="lang-modal-backdrop" id="lang-modal-backdrop" aria-label="关闭语言切换说明"></button>
+        <article class="lang-modal-panel">
+            <p class="lang-modal-kicker">WHAT IS THIS?</p>
+            <h3 id="lang-modal-title">这是什么？</h3>
+            <p class="lang-modal-copy">你将切换到 `Project Neral` 的首页模式。这是一门仍在设计中的原创语言，带有自己的文字、发音和词法体系。</p>
+            <p class="lang-modal-copy" id="lang-modal-copy-ne">Ne language new si.</p>
+            <p class="lang-modal-link-row">
+                <a class="lang-modal-link" id="lang-modal-link" href="language-lab.html">进入语言主页 / Language Lab</a>
+            </p>
+            <div class="lang-modal-actions">
+                <button class="lang-modal-button lang-modal-button-secondary" id="lang-modal-cancel">暂不切换</button>
+                <button class="lang-modal-button lang-modal-button-primary" id="lang-modal-confirm">确认切换</button>
+            </div>
+        </article>
+    </div>
+
+    <script src="js/content-data.js?v=20260412i"></script>
+    <script src="js/language-data.js?v=20260412i"></script>
+    <script src="js/main.js?v=20260412i"></script>
 </body>
 </html>

@@ -1,5 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="mind">
-    <rect width="120" height="120" rx="22" fill="#fbf5e8"/>
-    <path d="M60 16 L92 42 L80 96 L40 96 L28 42 Z" fill="#f4e8c8" stroke="#1f1b16" stroke-width="6"/>
-    <path d="M60 34 L60 86 M38 60 L82 60" stroke="#1f46ff" stroke-width="8" stroke-linecap="round"/>
+    <rect width="120" height="120" rx="22" fill="#fbf4e8"/>
+    <path d="M16 24 L104 24" stroke="rgba(23, 20, 17, 0.12)" stroke-width="2" stroke-linecap="round"/>
+    <path d="M18 92 L102 92" stroke="rgba(23, 20, 17, 0.12)" stroke-width="2" stroke-linecap="round"/>
+    <path d="M60 18 L60 102" stroke="rgba(23, 20, 17, 0.06)" stroke-width="2" stroke-dasharray="4 8" stroke-linecap="round"/>
+    <g transform="rotate(0 60 60)" opacity="0.28">
+        <path d="M26 18 L96 104" stroke="rgba(139, 90, 43, 0.12)" stroke-width="10" stroke-linecap="round"/>
+    </g>
+    <g>
+        <path d="M58 22 L88 54 L60 92 L28 60 Z" fill="none" stroke="#191512" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><path d="M44 56 C52 48 64 46 74 52" fill="none" stroke="#191512" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><path d="M44 56 C54 64 62 70 70 74" fill="none" stroke="#191512" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    <g transform="translate(64 70) scale(0.34)">
+        <path d="M58 26 L84 54 L60 88 L32 60 Z" fill="none" stroke="#8b5a2b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M46 58 C58 50 68 54 72 66" fill="none" stroke="#8b5a2b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
 </svg>

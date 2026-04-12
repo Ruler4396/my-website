@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/language-lab.css?v=20260411a">
+    <link rel="stylesheet" href="css/language-lab.css?v=20260412i">
 </head>
 <body>
     <div class="lab-grain" aria-hidden="true"></div>
@@ -28,7 +28,7 @@
                 <a href="#lexicon">Lexicon</a>
                 <a href="#corpus">Corpus</a>
             </nav>
-            <a class="lab-back" href="index.html">Back</a>
+            <a class="lab-back" href="index.html">Home / 首页</a>
         </div>
     </header>
 
@@ -45,6 +45,7 @@
                     <div class="hero-actions">
                         <a href="#lexicon" class="hero-action hero-action-primary">进入词典</a>
                         <a href="#glyphs" class="hero-action">查看字形</a>
+                        <a href="index.html" class="hero-action">返回首页</a>
                     </div>
                 </div>
                 <aside class="hero-panel">
@@ -123,6 +124,14 @@
                                 <option value="all">全部</option>
                             </select>
                         </label>
+                        <label class="filter-field" for="entry-filter">
+                            <span>Entry Type</span>
+                            <select id="entry-filter">
+                                <option value="root">仅根词</option>
+                                <option value="all">全部</option>
+                                <option value="derived">仅派生词</option>
+                            </select>
+                        </label>
                     </div>
                 </div>
                 <div class="lexicon-meta" id="lexicon-meta"></div>
@@ -160,7 +169,7 @@
         </div>
     </footer>
 
-    <script src="js/language-data.js?v=20260411a"></script>
-    <script src="js/language-lab.js?v=20260411a"></script>
+    <script src="js/language-data.js?v=20260412i"></script>
+    <script src="js/language-lab.js?v=20260412i"></script>
 </body>
 </html>

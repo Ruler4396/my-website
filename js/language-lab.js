@@ -2,7 +2,8 @@ const data = window.languageLabData || null;
 
 const state = {
     query: "",
-    pos: "all"
+    pos: "all",
+    entryType: "root"
 };
 
 const elements = {
@@ -15,6 +16,7 @@ const elements = {
     glyphGrid: document.getElementById("glyph-grid"),
     lexiconSearch: document.getElementById("lexicon-search"),
     posFilter: document.getElementById("pos-filter"),
+    entryFilter: document.getElementById("entry-filter"),
     lexiconMeta: document.getElementById("lexicon-meta"),
     lexiconTable: document.getElementById("lexicon-table"),
     exampleList: document.getElementById("example-list"),
@@ -138,15 +140,28 @@ function getVisibleLexicon() {
 
     return data.lexicon.filter((entry) => {
         const matchPos = state.pos === "all" || entry.pos === state.pos;
+        const isDerived = Boolean(entry.derived_from);
+        const matchEntryType =
+            state.entryType === "all" ||
+            (state.entryType === "root" && !isDerived) ||
+            (state.entryType === "derived" && isDerived);
         const searchText = `${entry.headword_native} ${entry.headword_romanized} ${entry.gloss_zh} ${entry.definition_zh} ${entry.tags.join(" ")}`.toLowerCase();
         const matchQuery = !query || searchText.includes(query);
-        return matchPos && matchQuery;
+        return matchPos && matchEntryType && matchQuery;
     });
 }
 
 function renderLexicon() {
     const visible = getVisibleLexicon();
-    elements.lexiconMeta.textContent = `显示 ${visible.length} / ${data.lexicon.length} 条词条。`;
+    const rootCount = data.lexicon.filter((entry) => !entry.derived_from).length;
+    const derivedCount = data.lexicon.length - rootCount;
+    const modeLabel =
+        state.entryType === "root"
+            ? `当前显示根词；派生词已折叠。根词 ${rootCount} 条，派生词 ${derivedCount} 条。`
+            : state.entryType === "derived"
+              ? `当前仅显示派生词。根词 ${rootCount} 条，派生词 ${derivedCount} 条。`
+              : `当前显示全部词条。根词 ${rootCount} 条，派生词 ${derivedCount} 条。`;
+    elements.lexiconMeta.textContent = `显示 ${visible.length} / ${data.lexicon.length} 条词条。${modeLabel}`;
 
     elements.lexiconTable.innerHTML = visible
         .map(
@@ -223,6 +238,11 @@ function bindEvents() {
 
     elements.posFilter.addEventListener("change", (event) => {
         state.pos = event.target.value;
+        renderLexicon();
+    });
+
+    elements.entryFilter.addEventListener("change", (event) => {
+        state.entryType = event.target.value;
         renderLexicon();
     });
 }

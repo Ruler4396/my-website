@@ -1,14 +1,19 @@
 const fs = require("fs");
 const path = require("path");
+const { spawnSync } = require("child_process");
 
 const glyphBlueprint = require("./language/source/glyph-blueprint.js");
 const grammarTopics = require("./language/source/grammar-topics.js");
 const { functionWords, concepts } = require("./language/source/lexicon-blueprint.js");
 const { examples: exampleBlueprints, texts: textBlueprints } = require("./language/source/corpus.js");
+const siteLocalizationSource = require("./language/source/site-localization.js");
 
 const ROOT = __dirname;
 const OUTPUT_JS = path.join(ROOT, "js", "language-data.js");
 const OUTPUT_ASSET_DIR = path.join(ROOT, "assets", "language");
+const OUTPUT_FONT_TTF = path.join(OUTPUT_ASSET_DIR, "neral-glyphic-regular.ttf");
+const OUTPUT_FONT_WOFF2 = path.join(OUTPUT_ASSET_DIR, "neral-glyphic-regular.woff2");
+const FONT_BUILD_SCRIPT = path.join(ROOT, "scripts", "build-language-font.py");
 
 const PHONETIC_ONSETS = ["m", "n", "p", "t", "k", "s", "sh", "h", "l", "r", "v", "z", "y", "w", "d", "g", "b", "f"];
 const PHONETIC_VOWELS = ["a", "e", "i", "o", "u"];
@@ -98,7 +103,7 @@ function joinSentenceParts(parts) {
         if (!part) {
             return;
         }
-        if (/^[.?!,:;]$/.test(part)) {
+        if (/^[.?!,:;/]$/.test(part)) {
             output = `${output}${part}`;
             return;
         }
@@ -117,38 +122,39 @@ function buildNativeForm(tokens, glyphMap) {
 }
 
 function deriveEntry(baseEntry, type, derivedFromId) {
+    const baseGloss = baseEntry.gloss_zh;
     const strategies = {
         noun: {
             rel: {
                 suffix: "li",
                 pos: "adj",
                 domain: baseEntry.domain,
-                glossZh: `${baseEntry.glossZh}相关的`,
-                definitionZh: `与“${baseEntry.glossZh}”相关，或具有其属性。`,
+                glossZh: `${baseGloss}相关的`,
+                definitionZh: `与“${baseGloss}”相关，或具有其属性。`,
                 tags: ["derived", "relational"]
             },
             place: {
                 suffix: "to",
                 pos: "noun",
                 domain: "place",
-                glossZh: `${baseEntry.glossZh}之地`,
-                definitionZh: `与“${baseEntry.glossZh}”关联的地点、场所或容器。`,
+                glossZh: `${baseGloss}之地`,
+                definitionZh: `与“${baseGloss}”关联的地点、场所或容器。`,
                 tags: ["derived", "locative"]
             },
             agent: {
                 suffix: "ren",
                 pos: "noun",
                 domain: "human",
-                glossZh: `${baseEntry.glossZh}之人`,
-                definitionZh: `管理、使用、守护或代表“${baseEntry.glossZh}”的人。`,
+                glossZh: `${baseGloss}之人`,
+                definitionZh: `管理、使用、守护或代表“${baseGloss}”的人。`,
                 tags: ["derived", "agent"]
             },
             field: {
                 suffix: "sa",
                 pos: "noun",
                 domain: baseEntry.domain,
-                glossZh: `${baseEntry.glossZh}群域`,
-                definitionZh: `围绕“${baseEntry.glossZh}”形成的一组事物、场域或集合。`,
+                glossZh: `${baseGloss}群域`,
+                definitionZh: `围绕“${baseGloss}”形成的一组事物、场域或集合。`,
                 tags: ["derived", "collective"]
             }
         },
@@ -157,32 +163,32 @@ function deriveEntry(baseEntry, type, derivedFromId) {
                 suffix: "ma",
                 pos: "noun",
                 domain: "mind",
-                glossZh: `${baseEntry.glossZh}之事`,
-                definitionZh: `与“${baseEntry.glossZh}”相关的动作、过程或事件。`,
+                glossZh: `${baseGloss}之事`,
+                definitionZh: `与“${baseGloss}”相关的动作、过程或事件。`,
                 tags: ["derived", "action-noun"]
             },
             agent: {
                 suffix: "ren",
                 pos: "noun",
                 domain: "human",
-                glossZh: `${baseEntry.glossZh}者`,
-                definitionZh: `执行“${baseEntry.glossZh}”的人。`,
+                glossZh: `${baseGloss}者`,
+                definitionZh: `执行“${baseGloss}”的人。`,
                 tags: ["derived", "agent"]
             },
             result: {
                 suffix: "te",
                 pos: "noun",
                 domain: "craft",
-                glossZh: `${baseEntry.glossZh}之成物`,
-                definitionZh: `由“${baseEntry.glossZh}”产生、留下或完成的结果。`,
+                glossZh: `${baseGloss}之成物`,
+                definitionZh: `由“${baseGloss}”产生、留下或完成的结果。`,
                 tags: ["derived", "result"]
             },
             rel: {
                 suffix: "li",
                 pos: "adj",
                 domain: baseEntry.domain,
-                glossZh: `可${baseEntry.glossZh}的`,
-                definitionZh: `适合、能够或倾向于“${baseEntry.glossZh}”。`,
+                glossZh: `可${baseGloss}的`,
+                definitionZh: `适合、能够或倾向于“${baseGloss}”。`,
                 tags: ["derived", "relational"]
             }
         },
@@ -191,32 +197,32 @@ function deriveEntry(baseEntry, type, derivedFromId) {
                 suffix: "ma",
                 pos: "noun",
                 domain: "mind",
-                glossZh: `${baseEntry.glossZh}之性`,
-                definitionZh: `“${baseEntry.glossZh}”这一性质本身。`,
+                glossZh: `${baseGloss}之性`,
+                definitionZh: `“${baseGloss}”这一性质本身。`,
                 tags: ["derived", "abstract"]
             },
             become: {
                 suffix: "ri",
                 pos: "verb",
                 domain: baseEntry.domain,
-                glossZh: `变得${baseEntry.glossZh}`,
-                definitionZh: `进入或呈现“${baseEntry.glossZh}”的状态。`,
+                glossZh: `变得${baseGloss}`,
+                definitionZh: `进入或呈现“${baseGloss}”的状态。`,
                 tags: ["derived", "inchoative"]
             },
             adv: {
                 suffix: "se",
                 pos: "adv",
                 domain: baseEntry.domain,
-                glossZh: `${baseEntry.glossZh}地`,
-                definitionZh: `以“${baseEntry.glossZh}”的方式。`,
+                glossZh: `${baseGloss}地`,
+                definitionZh: `以“${baseGloss}”的方式。`,
                 tags: ["derived", "adverbial"]
             },
             neg: {
                 prefix: "ku",
                 pos: "adj",
                 domain: baseEntry.domain,
-                glossZh: `不${baseEntry.glossZh}`,
-                definitionZh: `缺少、反转或偏离“${baseEntry.glossZh}”。`,
+                glossZh: `不${baseGloss}`,
+                definitionZh: `缺少、反转或偏离“${baseGloss}”。`,
                 tags: ["derived", "negative"]
             }
         }
@@ -338,7 +344,7 @@ function flattenGlyphs() {
 }
 
 function resolveToken(token, lexiconMap, glyphMap) {
-    if (/^[.?!,:;]$/.test(token)) {
+    if (/^[.?!,:;/]$/.test(token)) {
         return {
             kind: "punct",
             romanized: token,
@@ -361,6 +367,64 @@ function resolveToken(token, lexiconMap, glyphMap) {
         gloss_zh: entry.gloss_zh,
         glyph_preview: entry.native_tokens.map((tokenId) => glyphMap.get(tokenId)?.svg_asset).filter(Boolean)
     };
+}
+
+function resolvePhrasePart(part, lexiconMap, glyphMap) {
+    if (/^[.?!,:;/]$/.test(part)) {
+        return {
+            romanized: part,
+            native_form: part
+        };
+    }
+
+    const entry = lexiconMap.get(part);
+    if (entry) {
+        return {
+            romanized: entry.headword_romanized,
+            native_form: entry.headword_native
+        };
+    }
+
+    const glyph = glyphMap.get(part);
+    if (glyph) {
+        return {
+            romanized: glyph.romanized,
+            native_form: glyph.fallback_symbol
+        };
+    }
+
+    return {
+        romanized: String(part),
+        native_form: String(part)
+    };
+}
+
+function resolvePhrase(parts, lexiconMap, glyphMap) {
+    const resolved = parts.map((part) => resolvePhrasePart(part, lexiconMap, glyphMap));
+    return {
+        romanized: joinSentenceParts(resolved.map((part) => part.romanized)),
+        native: joinSentenceParts(resolved.map((part) => part.native_form))
+    };
+}
+
+function resolveLocalizationNode(node, lexiconMap, glyphMap) {
+    if (Array.isArray(node)) {
+        return resolvePhrase(node, lexiconMap, glyphMap);
+    }
+    if (typeof node === "string") {
+        return node;
+    }
+    if (!node || typeof node !== "object") {
+        return node;
+    }
+
+    return Object.fromEntries(
+        Object.entries(node).map(([key, value]) => [key, resolveLocalizationNode(value, lexiconMap, glyphMap)])
+    );
+}
+
+function buildSiteLocalization(lexiconMap, glyphMap) {
+    return resolveLocalizationNode(siteLocalizationSource, lexiconMap, glyphMap);
 }
 
 function buildExamples(lexicon, glyphMap) {
@@ -415,49 +479,37 @@ function ensureDir(dirPath) {
 }
 
 function renderSvg(item, index) {
-    if (item.phonetic_role === "determinative") {
-        const motifs = [
-            `<path d="M26 30 L60 18 L94 30 L94 92 L26 92 Z" fill="#f4e8c8" stroke="#1f1b16" stroke-width="6"/>`,
-            `<path d="M22 62 C30 30, 48 22, 62 22 C78 22, 94 34, 98 60 C90 88, 74 98, 56 98 C40 98, 26 88, 22 62 Z" fill="#f4e8c8" stroke="#1f1b16" stroke-width="6"/>`,
-            `<path d="M60 16 L92 42 L80 96 L40 96 L28 42 Z" fill="#f4e8c8" stroke="#1f1b16" stroke-width="6"/>`,
-            `<circle cx="60" cy="60" r="34" fill="#f4e8c8" stroke="#1f1b16" stroke-width="6"/>`,
-            `<path d="M18 60 L38 22 L82 22 L102 60 L82 98 L38 98 Z" fill="#f4e8c8" stroke="#1f1b16" stroke-width="6"/>`
-        ];
-        const inner = [
-            `<path d="M44 42 C48 58, 72 58, 76 42" stroke="#1f46ff" stroke-width="8" fill="none" stroke-linecap="round"/>`,
-            `<path d="M40 46 L60 74 L80 46" stroke="#1f46ff" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`,
-            `<path d="M60 34 L60 86 M38 60 L82 60" stroke="#1f46ff" stroke-width="8" stroke-linecap="round"/>`,
-            `<path d="M40 82 L80 38" stroke="#1f46ff" stroke-width="8" stroke-linecap="round"/><circle cx="46" cy="46" r="6" fill="#1f46ff"/><circle cx="74" cy="74" r="6" fill="#1f46ff"/>`,
-            `<path d="M38 44 L82 44 L60 82 Z" fill="none" stroke="#1f46ff" stroke-width="8" stroke-linejoin="round"/>`
-        ];
-        return `
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="${item.romanized}">
-    <rect width="120" height="120" rx="22" fill="#fbf5e8"/>
-    ${motifs[index % motifs.length]}
-    ${inner[index % inner.length]}
-</svg>`.trim();
-    }
-
-    if (item.phonetic_role === "consonant") {
-        const x = 30 + (index % 6) * 10;
-        const y = 24 + (index % 4) * 8;
-        return `
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="${item.romanized}">
-    <rect width="120" height="120" rx="22" fill="#f8f2e6"/>
-    <path d="M28 98 L28 24" stroke="#1f1b16" stroke-width="8" stroke-linecap="round"/>
-    <path d="M28 ${y} L${x + 36} ${y}" stroke="#1f46ff" stroke-width="8" stroke-linecap="round"/>
-    <path d="M28 60 L${x + 26} 60" stroke="#1f1b16" stroke-width="8" stroke-linecap="round"/>
-    <path d="M${x} 24 L${x + 12} 98" stroke="#8b5a2b" stroke-width="8" stroke-linecap="round"/>
-    <circle cx="${x + 28}" cy="${84 - (index % 5) * 8}" r="6" fill="#1f46ff"/>
-</svg>`.trim();
-    }
+    const formalStroke = item.phonetic_role === "determinative" ? "#191512" : "#221712";
+    const cursiveStroke = item.phonetic_role === "vowel" ? "#1f46ff" : "#8b5a2b";
+    const backdropTone = item.phonetic_role === "determinative" ? "#fbf4e8" : "#f8f1e4";
+    const guideColor = item.phonetic_role === "vowel" ? "rgba(31, 70, 255, 0.14)" : "rgba(23, 20, 17, 0.12)";
+    const formalPaths = (item.formal_paths || [])
+        .map(
+            (pathData) => `<path d="${pathData}" fill="none" stroke="${formalStroke}" stroke-width="${item.phonetic_role === "vowel" ? 7 : 8}" stroke-linecap="round" stroke-linejoin="round"/>`
+        )
+        .join("");
+    const cursivePaths = (item.cursive_paths || [])
+        .map(
+            (pathData) => `<path d="${pathData}" fill="none" stroke="${cursiveStroke}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`
+        )
+        .join("");
+    const grainRotation = (index % 5) * 4 - 8;
 
     return `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="${item.romanized}">
-    <rect width="120" height="120" rx="22" fill="#f8f2e6"/>
-    <circle cx="60" cy="60" r="${24 + (index % 5) * 4}" fill="none" stroke="#1f46ff" stroke-width="8"/>
-    <path d="M60 18 L60 102" stroke="#1f1b16" stroke-width="8" stroke-linecap="round"/>
-    <path d="M30 ${38 + (index % 4) * 10} L90 ${82 - (index % 4) * 10}" stroke="#8b5a2b" stroke-width="8" stroke-linecap="round"/>
+    <rect width="120" height="120" rx="22" fill="${backdropTone}"/>
+    <path d="M16 24 L104 24" stroke="${guideColor}" stroke-width="2" stroke-linecap="round"/>
+    <path d="M18 92 L102 92" stroke="${guideColor}" stroke-width="2" stroke-linecap="round"/>
+    <path d="M60 18 L60 102" stroke="rgba(23, 20, 17, 0.06)" stroke-width="2" stroke-dasharray="4 8" stroke-linecap="round"/>
+    <g transform="rotate(${grainRotation} 60 60)" opacity="0.28">
+        <path d="M26 18 L96 104" stroke="rgba(139, 90, 43, 0.12)" stroke-width="10" stroke-linecap="round"/>
+    </g>
+    <g>
+        ${formalPaths}
+    </g>
+    <g transform="translate(64 70) scale(0.34)">
+        ${cursivePaths}
+    </g>
 </svg>`.trim();
 }
 
@@ -467,6 +519,27 @@ function writeGlyphAssets(glyphs) {
         const filePath = path.join(ROOT, glyph.svg_asset);
         fs.writeFileSync(filePath, `${renderSvg(glyph, index)}\n`, "utf-8");
     });
+}
+
+function buildWebFont(glyphs) {
+    const result = spawnSync(
+        "python3",
+        [FONT_BUILD_SCRIPT, OUTPUT_FONT_TTF, OUTPUT_FONT_WOFF2],
+        {
+            input: JSON.stringify(glyphs),
+            encoding: "utf-8",
+            stdio: ["pipe", "pipe", "pipe"]
+        }
+    );
+
+    if (result.status !== 0) {
+        throw new Error(`字体构建失败：${result.stderr || result.stdout || "unknown error"}`);
+    }
+
+    return {
+        ttf: path.relative(ROOT, OUTPUT_FONT_TTF).replace(/\\/g, "/"),
+        woff2: path.relative(ROOT, OUTPUT_FONT_WOFF2).replace(/\\/g, "/")
+    };
 }
 
 function buildPhonologyData() {
@@ -502,6 +575,7 @@ function main() {
     const exampleMap = new Map(examples.map((entry) => [entry.id, entry]));
     validateGrammarTopics(exampleMap);
     const texts = buildTexts(exampleMap);
+    const siteLocalization = buildSiteLocalization(lexiconMap, glyphMap);
 
     if (lexicon.length < 500 || lexicon.length > 800) {
         throw new Error(`词库规模不满足目标：${lexicon.length}`);
@@ -514,6 +588,7 @@ function main() {
     }
 
     writeGlyphAssets(glyphs);
+    const fontAssets = buildWebFont(glyphs);
 
     const data = {
         meta: {
@@ -530,7 +605,8 @@ function main() {
                 "内部代号，不是最终语言名。",
                 "网站当前仅提供静态展示、检索与评审。",
                 "原生书写采用语义标记 + 音符链的双层表示。"
-            ]
+            ],
+            fonts: fontAssets
         },
         documents: buildDocumentList(),
         phonology: buildPhonologyData(),
@@ -538,7 +614,8 @@ function main() {
         grammar_topics: grammarTopics,
         lexicon,
         examples,
-        texts
+        texts,
+        site_localization: siteLocalization
     };
 
     const output = `// ===== Project Neral language data =====\nwindow.languageLabData = ${JSON.stringify(data, null, 4)};\n`;
@@ -548,6 +625,7 @@ function main() {
     console.log(`📚 Lexicon entries: ${lexicon.length}`);
     console.log(`📝 Example sentences: ${examples.length}`);
     console.log(`🔤 Glyph assets: ${glyphs.length}`);
+    console.log(`🅰️ Web font: ${fontAssets.woff2}`);
     console.log(`📄 Output: ${path.relative(ROOT, OUTPUT_JS)}`);
 }
 

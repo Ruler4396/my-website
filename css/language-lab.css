@@ -1,3 +1,12 @@
+@font-face {
+    font-family: "Neral Glyphic";
+    src: url("../assets/language/neral-glyphic-regular.woff2?v=20260412i") format("woff2"),
+         url("../assets/language/neral-glyphic-regular.ttf?v=20260412i") format("truetype");
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+}
+
 :root {
     --bg: #f6efe4;
     --bg-strong: #efe2cf;
@@ -14,6 +23,7 @@
     --body: "Noto Sans SC", "PingFang SC", sans-serif;
     --ui: "IBM Plex Sans", "Noto Sans SC", sans-serif;
     --mono: "IBM Plex Mono", monospace;
+    --script: "Neral Glyphic", "DejaVu Sans", "Noto Sans Symbols 2", serif;
     --shadow: 0 22px 60px rgba(52, 34, 17, 0.08);
 }
 
@@ -536,9 +546,11 @@ select {
 }
 
 .word-fallback {
-    font-family: var(--mono);
+    font-family: var(--script);
     font-size: 0.84rem;
     color: var(--muted);
+    letter-spacing: 0.03em;
+    font-variant-ligatures: none;
 }
 
 .lexicon-romanized {

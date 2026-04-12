@@ -1,0 +1,101 @@
+module.exports = {
+    ui: {
+        pageTitle: ["NERAL", ":", "article", ",", "note", ",", "entry__field"],
+        pageDescription: ["ne", "site", "article", ",", "note", ",", "poem", ",", "memory", "se", "si", "."],
+        brandCode: "NERAL",
+        brandName: ["site"],
+        brandAria: ["page", "de", "return"],
+        menuToggle: ["kind", "open"],
+        navAria: ["site", "kind"],
+        navSelected: ["choose__result"],
+        navSpectrum: ["kind"],
+        navArchive: ["entry__field"],
+        navMethod: ["method"],
+        heroKicker: ["NERAL", "/", "site"],
+        heroTitle: ["article", ",", "note", ",", "entry__field", "."],
+        heroSummary: ["ne", "site", "article", ",", "note", ",", "poem", ",", "memory", "se", "si", "."],
+        heroActionPrimary: ["choose__result"],
+        heroActionSecondary: ["entry__field"],
+        metricTotal: ["entry"],
+        metricArticles: ["article"],
+        metricYears: ["year"],
+        heroNote1: ["quiet__adv", "read", "."],
+        heroNote2: ["language", "true", "live", "vu", "."],
+        selectedKicker: ["choose__result"],
+        selectedTitle: ["choose__result"],
+        spectrumKicker: ["kind"],
+        spectrumTitle: ["kind"],
+        archiveKicker: ["entry__field"],
+        archiveTitle: ["entry__field"],
+        searchLabel: ["find__act"],
+        searchPlaceholder: ["entry", ",", "article", ",", "date", ",", "name"],
+        methodKicker: ["method"],
+        methodTitle: ["slow", ",", "good", "si", "."],
+        methodQuote: ["book", "read", "ya", "idea", "grow", "."],
+        methodLead: ["ne", "method", "memory", "se", "idea", "help", "."],
+        methodBullet1: ["write__act", ",", "good"],
+        methodBullet2: ["entry__field", ",", "clear"],
+        methodBullet3: ["slow", ",", "good"],
+        footerBrand: "NERAL",
+        footerRecordsAria: "site records",
+        footerGonganIconAlt: "record icon",
+        footerGongan: "CN Gongan 44090402441277",
+        footerBeian: "ICP 2026022061",
+        footerClassroom: ["school", "page"],
+        footerAdmin: ["ZeroClaw", "page"],
+        footerGithub: ["GitHub", "page"],
+        footerTop: ["return"],
+        themeDark: ["dark"],
+        themeLight: ["bright"],
+        latestTag: ["new"],
+        selectedTag: ["choose__result"],
+        expandAction: ["open"],
+        readAction: ["read"],
+        openAction: ["open"],
+        allFilter: ["all"],
+        noContent: ["entry", "na", "si", "."],
+        noPrimary: ["choose__result", "na", "si", "."],
+        noSecondary: ["article", "na", "si", "."],
+        noMatches: ["entry", "na", "si", "."],
+        closeReader: ["close"],
+        closeReaderAria: ["close"],
+        archiveUnit: ["entry"],
+        wordUnit: [],
+        undated: ["date", "na"],
+        toggleTo: "中文",
+        readerFallbackTitle: ["entry"],
+        modalNeralCopy: ["ne", "language", "new", "si", ".", "ne", "language", "script", "se", "voice", "se", "si", "."],
+        modalLabLink: ["language", "page"]
+    },
+    categories: {
+        articles: {
+            label: ["article"],
+            summary: ["long", "write__act", "si", "."]
+        },
+        notes: {
+            label: ["note"],
+            summary: ["short", "note", "si", "."]
+        },
+        poetry: {
+            label: ["poem"],
+            summary: ["old", "poem", "si", "."]
+        },
+        memories: {
+            label: ["memory"],
+            summary: ["memory", "remain", "si", "."]
+        },
+        misc: {
+            label: ["entry"],
+            summary: ["tool", "se", "entry", "se", "si", "."]
+        }
+    },
+    content: {
+        translatedSummary: ["translate__result", "nu", "si", "."],
+        untranslatedSummary: ["translate__result", "na", "si", "."],
+        untranslatedBody: ["ne", "entry", "Neral", "translate__result", "na", "si", "."],
+        nameLabel: ["name"],
+        kindLabel: ["kind"],
+        dateLabel: ["date"]
+    },
+    overrides: {}
+};
