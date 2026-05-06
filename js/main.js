@@ -328,22 +328,20 @@ function renderRevealField() {
     state.revealSnippets = sourceSnippets.length
         ? sourceSnippets
         : ["把内容从装饰里剥离出来", "索引不是答案，是入口", "文字需要反复经过"];
-    elements.revealWords.innerHTML = `<div class="reveal-stack" id="reveal-stack"></div>`;
-    renderRevealStack(0);
-}
 
-function renderRevealStack(seed) {
-    const stack = document.getElementById("reveal-stack");
-    if (!stack || !state.revealSnippets.length) {
-        return;
-    }
-
-    const scaleCycle = ["large", "small", "medium", "small", "wide", "medium"];
-    stack.innerHTML = Array.from({ length: 8 }, (_, index) => {
-        const snippetIndex = (seed + index * 3) % state.revealSnippets.length;
-        const text = state.revealSnippets[snippetIndex];
-        const scale = scaleCycle[(seed + index) % scaleCycle.length];
-        return `<span class="reveal-line ${scale}" style="--i:${index}">${escapeHtml(text)}</span>`;
+    const map = [
+        [8, 15, 34, "large"], [38, 12, 30, "small"], [63, 16, 28, "medium"],
+        [18, 27, 26, "small"], [46, 29, 34, "wide"], [70, 31, 24, "small"],
+        [7, 43, 29, "medium"], [34, 45, 31, "large"], [62, 44, 34, "wide"],
+        [15, 60, 34, "wide"], [47, 62, 26, "small"], [68, 58, 30, "medium"],
+        [9, 74, 24, "small"], [32, 76, 36, "large"], [63, 75, 31, "wide"],
+        [22, 20, 24, "small"], [55, 24, 26, "medium"], [78, 20, 22, "small"],
+        [26, 38, 32, "wide"], [75, 43, 24, "small"], [8, 54, 24, "small"],
+        [40, 55, 28, "medium"], [74, 70, 25, "small"], [18, 84, 32, "wide"]
+    ];
+    elements.revealWords.innerHTML = map.map(([x, y, width, scale], index) => {
+        const text = state.revealSnippets[index % state.revealSnippets.length];
+        return `<span class="reveal-line ${scale}" style="--x:${x}%;--y:${y}%;--w:${width}ch;--i:${index}">${escapeHtml(text)}</span>`;
     }).join("");
 }
 
@@ -471,7 +469,7 @@ function initRevealField() {
         const rect = field.getBoundingClientRect();
         const viewportMin = Math.min(window.innerWidth, window.innerHeight);
         const fieldMin = Math.min(rect.width, rect.height);
-        const radius = Math.round(Math.max(116, Math.min(240, Math.min(viewportMin, fieldMin) * 0.18)));
+        const radius = Math.round(Math.max(142, Math.min(260, Math.min(viewportMin, fieldMin) * 0.22)));
         field.style.setProperty("--mask-size", `${radius}px`);
         field.style.setProperty("--line-max", `${Math.round(radius * 2.05)}px`);
     };
@@ -480,15 +478,8 @@ function initRevealField() {
         const rect = field.getBoundingClientRect();
         const localX = Math.max(0, Math.min(rect.width, clientX - rect.left));
         const localY = Math.max(0, Math.min(rect.height, clientY - rect.top));
-        const zoneX = Math.floor((localX / Math.max(1, rect.width)) * 5);
-        const zoneY = Math.floor((localY / Math.max(1, rect.height)) * 4);
-        const seed = Math.max(0, zoneY * 5 + zoneX);
         field.style.setProperty("--mx", `${localX}px`);
         field.style.setProperty("--my", `${localY}px`);
-        if (field.dataset.revealSeed !== String(seed)) {
-            field.dataset.revealSeed = String(seed);
-            renderRevealStack(seed);
-        }
     };
 
     updateMetrics();
