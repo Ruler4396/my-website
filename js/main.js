@@ -305,23 +305,31 @@ function renderRevealField() {
         return;
     }
 
-    const patternTokens = ["RULER", "CONTENT", "ARCHIVE", "文章", "笔记", "记忆", "语言", "INDEX"];
-    elements.revealPattern.innerHTML = Array.from({ length: 96 }, (_, index) => {
-        const token = patternTokens[index % patternTokens.length];
-        return `<span>${escapeHtml(token)}</span>`;
-    }).join("");
+    const patternTokens = ["RULER", "CONTENT", "ARCHIVE", "INDEX", "LANGUAGE", "MEMORY", "NOTES", "ESSAY", "文章", "笔记", "记忆", "语言"];
+    elements.revealPattern.innerHTML = patternTokens
+        .map((token, index) => `<span class="pattern-token pattern-token-${index + 1}">${escapeHtml(token)}</span>`)
+        .join("");
 
     const sourceSnippets = state.items
         .filter((item) => item.markdown && item.markdown.trim().length > 0)
-        .map((item) => makeSnippet(item.markdown, 18, 38))
+        .flatMap((item) => {
+            const cleaned = sanitizeInline(item.markdown);
+            const sentences = cleaned
+                .split(/(?<=[。！？!?；;])\s*/)
+                .map((part) => part.trim())
+                .filter((part) => part.length >= 10);
+            return sentences.length ? sentences : [item.excerpt || item.title];
+        })
+        .map((text) => makeSnippet(text, 16, 46))
         .filter(Boolean)
-        .slice(0, 24);
+        .slice(0, 32);
 
     const fallback = ["把内容从装饰里剥离出来", "索引不是答案，是入口", "文字需要反复经过"];
     const snippets = sourceSnippets.length ? sourceSnippets : fallback;
-    elements.revealWords.innerHTML = Array.from({ length: 72 }, (_, index) => {
+    elements.revealWords.innerHTML = Array.from({ length: 26 }, (_, index) => {
         const text = snippets[index % snippets.length];
-        return `<span style="--i:${index}">${escapeHtml(text)}</span>`;
+        const scale = ["large", "small", "medium", "small", "wide"][index % 5];
+        return `<span class="reveal-line ${scale}" style="--i:${index}">${escapeHtml(text)}</span>`;
     }).join("");
 }
 
