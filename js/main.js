@@ -11,7 +11,8 @@ const state = {
     visibleItems: [],
     activeFilter: "all",
     query: "",
-    openKey: null
+    openKey: null,
+    revealSnippets: []
 };
 
 const elements = {
@@ -324,11 +325,24 @@ function renderRevealField() {
         .filter(Boolean)
         .slice(0, 32);
 
-    const fallback = ["把内容从装饰里剥离出来", "索引不是答案，是入口", "文字需要反复经过"];
-    const snippets = sourceSnippets.length ? sourceSnippets : fallback;
-    elements.revealWords.innerHTML = Array.from({ length: 26 }, (_, index) => {
-        const text = snippets[index % snippets.length];
-        const scale = ["large", "small", "medium", "small", "wide"][index % 5];
+    state.revealSnippets = sourceSnippets.length
+        ? sourceSnippets
+        : ["把内容从装饰里剥离出来", "索引不是答案，是入口", "文字需要反复经过"];
+    elements.revealWords.innerHTML = `<div class="reveal-stack" id="reveal-stack"></div>`;
+    renderRevealStack(0);
+}
+
+function renderRevealStack(seed) {
+    const stack = document.getElementById("reveal-stack");
+    if (!stack || !state.revealSnippets.length) {
+        return;
+    }
+
+    const scaleCycle = ["large", "small", "medium", "small", "wide", "medium"];
+    stack.innerHTML = Array.from({ length: 8 }, (_, index) => {
+        const snippetIndex = (seed + index * 3) % state.revealSnippets.length;
+        const text = state.revealSnippets[snippetIndex];
+        const scale = scaleCycle[(seed + index) % scaleCycle.length];
         return `<span class="reveal-line ${scale}" style="--i:${index}">${escapeHtml(text)}</span>`;
     }).join("");
 }
@@ -453,17 +467,37 @@ function initRevealField() {
         return;
     }
 
-    const setPoint = (clientX, clientY) => {
+    const updateMetrics = () => {
         const rect = field.getBoundingClientRect();
-        field.style.setProperty("--mx", `${clientX - rect.left}px`);
-        field.style.setProperty("--my", `${clientY - rect.top}px`);
+        const viewportMin = Math.min(window.innerWidth, window.innerHeight);
+        const fieldMin = Math.min(rect.width, rect.height);
+        const radius = Math.round(Math.max(116, Math.min(240, Math.min(viewportMin, fieldMin) * 0.18)));
+        field.style.setProperty("--mask-size", `${radius}px`);
+        field.style.setProperty("--line-max", `${Math.round(radius * 2.05)}px`);
     };
 
+    const setPoint = (clientX, clientY) => {
+        const rect = field.getBoundingClientRect();
+        const localX = Math.max(0, Math.min(rect.width, clientX - rect.left));
+        const localY = Math.max(0, Math.min(rect.height, clientY - rect.top));
+        const zoneX = Math.floor((localX / Math.max(1, rect.width)) * 5);
+        const zoneY = Math.floor((localY / Math.max(1, rect.height)) * 4);
+        const seed = Math.max(0, zoneY * 5 + zoneX);
+        field.style.setProperty("--mx", `${localX}px`);
+        field.style.setProperty("--my", `${localY}px`);
+        if (field.dataset.revealSeed !== String(seed)) {
+            field.dataset.revealSeed = String(seed);
+            renderRevealStack(seed);
+        }
+    };
+
+    updateMetrics();
+    window.addEventListener("resize", updateMetrics);
     field.addEventListener("pointermove", (event) => setPoint(event.clientX, event.clientY));
     field.addEventListener("pointerenter", (event) => setPoint(event.clientX, event.clientY));
     field.addEventListener("pointerleave", () => {
-        field.style.setProperty("--mx", "68%");
-        field.style.setProperty("--my", "48%");
+        field.style.setProperty("--mx", "50%");
+        field.style.setProperty("--my", "43%");
     });
 }
 
