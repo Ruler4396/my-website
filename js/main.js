@@ -450,7 +450,10 @@ function normalizeArticleMarkdown(markdown) {
         lastWasBlank = false;
     }
 
-    return compactLines.join("\n").trim();
+    return compactLines
+        .filter((line) => line)
+        .join("\n\n")
+        .trim();
 }
 
 function sanitizeInline(text) {
