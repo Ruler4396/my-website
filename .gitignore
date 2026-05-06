@@ -22,3 +22,7 @@ package-lock.json
 # 部署相关
 .cloudbase/
 tcb.json
+
+# Obsidian publish runtime files
+.publish-state/
+backups/
