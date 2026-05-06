@@ -17,6 +17,9 @@ const state = {
 const elements = {
     themeToggle: document.getElementById("theme-toggle"),
     mastheadTitle: document.getElementById("masthead-title"),
+    revealField: document.getElementById("reveal-field"),
+    revealPattern: document.getElementById("reveal-pattern"),
+    revealWords: document.getElementById("reveal-words"),
     latestPanel: document.getElementById("latest-panel"),
     quoteStrip: document.getElementById("quote-strip"),
     totalCount: document.getElementById("total-count"),
@@ -297,6 +300,31 @@ function renderLatest() {
     `;
 }
 
+function renderRevealField() {
+    if (!elements.revealPattern || !elements.revealWords) {
+        return;
+    }
+
+    const patternTokens = ["RULER", "CONTENT", "ARCHIVE", "文章", "笔记", "记忆", "语言", "INDEX"];
+    elements.revealPattern.innerHTML = Array.from({ length: 96 }, (_, index) => {
+        const token = patternTokens[index % patternTokens.length];
+        return `<span>${escapeHtml(token)}</span>`;
+    }).join("");
+
+    const sourceSnippets = state.items
+        .filter((item) => item.markdown && item.markdown.trim().length > 0)
+        .map((item) => makeSnippet(item.markdown, 18, 38))
+        .filter(Boolean)
+        .slice(0, 24);
+
+    const fallback = ["把内容从装饰里剥离出来", "索引不是答案，是入口", "文字需要反复经过"];
+    const snippets = sourceSnippets.length ? sourceSnippets : fallback;
+    elements.revealWords.innerHTML = Array.from({ length: 72 }, (_, index) => {
+        const text = snippets[index % snippets.length];
+        return `<span style="--i:${index}">${escapeHtml(text)}</span>`;
+    }).join("");
+}
+
 function renderQuotes() {
     const quoteItems = state.items
         .filter((item) => item.excerpt.trim().length >= 56)
@@ -377,6 +405,7 @@ function renderArchive() {
 }
 
 function renderAll() {
+    renderRevealField();
     renderLatest();
     renderQuotes();
     renderCategories();
@@ -386,7 +415,11 @@ function renderAll() {
 
 function setTheme(theme, persist = true) {
     const dark = theme === "dark";
-    document.documentElement.toggleAttribute("data-theme", dark);
+    if (dark) {
+        document.documentElement.setAttribute("data-theme", "dark");
+    } else {
+        document.documentElement.removeAttribute("data-theme");
+    }
     elements.themeToggle.textContent = dark ? "Light" : "Dark";
     elements.themeToggle.setAttribute("aria-pressed", String(dark));
     const themeMeta = document.querySelector('meta[name="theme-color"]');
@@ -403,6 +436,26 @@ function initTheme() {
     elements.themeToggle.addEventListener("click", () => {
         const next = document.documentElement.hasAttribute("data-theme") ? "light" : "dark";
         setTheme(next);
+    });
+}
+
+function initRevealField() {
+    const field = elements.revealField;
+    if (!field) {
+        return;
+    }
+
+    const setPoint = (clientX, clientY) => {
+        const rect = field.getBoundingClientRect();
+        field.style.setProperty("--mx", `${clientX - rect.left}px`);
+        field.style.setProperty("--my", `${clientY - rect.top}px`);
+    };
+
+    field.addEventListener("pointermove", (event) => setPoint(event.clientX, event.clientY));
+    field.addEventListener("pointerenter", (event) => setPoint(event.clientX, event.clientY));
+    field.addEventListener("pointerleave", () => {
+        field.style.setProperty("--mx", "68%");
+        field.style.setProperty("--my", "48%");
     });
 }
 
@@ -443,6 +496,7 @@ function init() {
     buildItems();
     initTheme();
     renderAll();
+    initRevealField();
     initEvents();
 }
 
