@@ -5,18 +5,17 @@
         <div style="text-indent:2em;">
 顺带给彤哥分享一个好消息，今年6月21日，正好是夏至那一天，我通表成为预备党员啦！全级最快的6个人之一，接下来一年里只要不违纪，基本都能顺利转正，也算是完成人生的阶段性目标了。也希望彤哥健健康康，快快乐乐，顺顺利利，早日实现自己的梦想！南北朝陆凯有云：“江南无所有，聊赠一枝春。”<sup>[4]</sup>身处岭南的我也没有什么适合送给彤哥，暂且将这本书<sup>[5]</sup>以及这首歌<sup>[6]</sup>作为礼物。他日若是有缘再见，为图彤哥之志，愿效犬马之劳。
         </div>
-        <div style="text-indent:2em;">
+
 彬再拜。
-        </div>
+
 <br />
-        </div>
-        <div style="text-align: right">
+
 2024年8月6日
-        </div>
-        <div style="text-align: right">
+
+
 广东茂名
-        </div>
-<br />
+
+
 参考文献：
     <div>
 [1] ：
@@ -49,7 +48,5 @@
         </a>
 （文件见附件）
     </div>
-    <div>
 [6] ：
-        <a href="http://163cn.tv/wdayWVP">
-Ciccone,&nbsp;<b>Madonna</b>&nbsp;Louise.&nbsp;<i><b>Like a Prayer</b></i>.&nbsp;Like a Prayer,&nbsp;Sire Records,&nbsp;<b>1989</b>.</a></div></div></div><br /></div><img style="width:1px;height:1px" src="https://count.mail.163.com/beacon/webmail.gif?type=webmail_mailtrace&amp;guid=pre_47ec5ca7ebab04336e51fdd34a4c1549" /><br /></div>
+Ciccone, Madonna Louise. Like a Prayer. Like a Prayer, Sire Records, 1989.
