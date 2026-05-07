@@ -306,7 +306,7 @@ function renderRevealField() {
         return;
     }
 
-    const patternTokens = ["RULER", "CONTENT", "ARCHIVE", "INDEX", "LANGUAGE", "MEMORY", "NOTES", "ESSAY", "文章", "笔记", "记忆", "语言"];
+    const patternTokens = ["RULER", "CONTENT", "ARCHIVE", "INDEX", "NOTES", "ESSAY", "MEMORY", "LANGUAGE", "文章", "笔记", "记忆", "文本"];
     elements.revealPattern.innerHTML = patternTokens
         .map((token, index) => `<span class="pattern-token pattern-token-${index + 1}">${escapeHtml(token)}</span>`)
         .join("");
@@ -318,27 +318,28 @@ function renderRevealField() {
             const sentences = cleaned
                 .split(/(?<=[。！？!?；;])\s*/)
                 .map((part) => part.trim())
-                .filter((part) => part.length >= 10);
+                .filter((part) => part.length >= 10 && part.length <= 90);
             return sentences.length ? sentences : [item.excerpt || item.title];
         })
-        .map((text) => makeSnippet(text, 16, 46))
         .filter(Boolean)
-        .slice(0, 32);
+        .slice(0, 96);
 
     state.revealSnippets = sourceSnippets.length
         ? sourceSnippets
         : ["把内容从装饰里剥离出来", "索引不是答案，是入口", "文字需要反复经过"];
 
-    const map = [
-        [8, 15, 34, "large"], [38, 12, 30, "small"], [63, 16, 28, "medium"],
-        [18, 27, 26, "small"], [46, 29, 34, "wide"], [70, 31, 24, "small"],
-        [7, 43, 29, "medium"], [34, 45, 31, "large"], [62, 44, 34, "wide"],
-        [15, 60, 34, "wide"], [47, 62, 26, "small"], [68, 58, 30, "medium"],
-        [9, 74, 24, "small"], [32, 76, 36, "large"], [63, 75, 31, "wide"],
-        [22, 20, 24, "small"], [55, 24, 26, "medium"], [78, 20, 22, "small"],
-        [26, 38, 32, "wide"], [75, 43, 24, "small"], [8, 54, 24, "small"],
-        [40, 55, 28, "medium"], [74, 70, 25, "small"], [18, 84, 32, "wide"]
-    ];
+    const map = Array.from({ length: 72 }, (_, index) => {
+        const column = index % 6;
+        const row = Math.floor(index / 6);
+        const jitterX = ((index * 17) % 9) - 4;
+        const jitterY = ((index * 11) % 7) - 3;
+        const x = 6 + column * 18 + jitterX;
+        const y = 6 + row * 8 + jitterY;
+        const width = [24, 30, 36, 28, 42, 32][index % 6];
+        const scale = ["small", "medium", "large", "small", "wide", "medium"][index % 6];
+        return [x, y, width, scale];
+    });
+
     elements.revealWords.innerHTML = map.map(([x, y, width, scale], index) => {
         const text = state.revealSnippets[index % state.revealSnippets.length];
         return `<span class="reveal-line ${scale}" style="--x:${x}%;--y:${y}%;--w:${width}ch;--i:${index}">${escapeHtml(text)}</span>`;
@@ -464,12 +465,14 @@ function initRevealField() {
     if (!field) {
         return;
     }
+    const masthead = document.querySelector(".masthead");
+    let scrollTicking = false;
 
     const updateMetrics = () => {
         const rect = field.getBoundingClientRect();
         const viewportMin = Math.min(window.innerWidth, window.innerHeight);
         const fieldMin = Math.min(rect.width, rect.height);
-        const radius = Math.round(Math.max(142, Math.min(260, Math.min(viewportMin, fieldMin) * 0.22)));
+        const radius = Math.round(Math.max(190, Math.min(360, Math.min(viewportMin, fieldMin) * 0.34)));
         field.style.setProperty("--mask-size", `${radius}px`);
         field.style.setProperty("--line-max", `${Math.round(radius * 2.05)}px`);
     };
@@ -482,8 +485,32 @@ function initRevealField() {
         field.style.setProperty("--my", `${localY}px`);
     };
 
+    const updateScrollStep = () => {
+        scrollTicking = false;
+        if (!masthead) {
+            return;
+        }
+        const rect = masthead.getBoundingClientRect();
+        const range = Math.max(1, rect.height - window.innerHeight);
+        const progress = Math.max(0, Math.min(1, -rect.top / range));
+        const step = Math.min(5, Math.floor(progress * 6));
+        masthead.style.setProperty("--hero-progress", progress.toFixed(3));
+        masthead.style.setProperty("--hero-step", step);
+        masthead.dataset.step = String(step);
+    };
+
+    const requestScrollStep = () => {
+        if (!scrollTicking) {
+            scrollTicking = true;
+            requestAnimationFrame(updateScrollStep);
+        }
+    };
+
     updateMetrics();
+    updateScrollStep();
     window.addEventListener("resize", updateMetrics);
+    window.addEventListener("resize", requestScrollStep);
+    window.addEventListener("scroll", requestScrollStep, { passive: true });
     field.addEventListener("pointermove", (event) => setPoint(event.clientX, event.clientY));
     field.addEventListener("pointerenter", (event) => setPoint(event.clientX, event.clientY));
     field.addEventListener("pointerleave", () => {

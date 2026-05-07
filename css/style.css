@@ -1,17 +1,18 @@
 :root {
-    --paper: #f4efe5;
-    --paper-2: #e8ddcc;
-    --surface: rgba(255, 253, 248, 0.82);
-    --surface-solid: #fcf8f1;
-    --ink: #171613;
-    --muted: #5e5a52;
-    --faint: #8b857b;
+    --paper: #f1f0ec;
+    --paper-2: #deded8;
+    --surface: rgba(250, 250, 247, 0.86);
+    --surface-solid: #fafaf7;
+    --ink: #11161b;
+    --muted: #4f565c;
+    --faint: #737b82;
     --line: rgba(23, 19, 15, 0.16);
     --line-strong: rgba(23, 19, 15, 0.42);
-    --accent: #8f3f25;
-    --accent-2: #355d45;
-    --accent-3: #b98539;
+    --accent: #33424d;
+    --accent-2: #52616b;
+    --accent-3: #747a80;
     --shell: min(1240px, calc(100vw - 56px));
+    --header-h: clamp(72px, 7.4vh, 88px);
     --body: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", sans-serif;
     --display: "Segoe UI Variable Display", "Segoe UI", "Noto Sans SC", "Microsoft YaHei UI", sans-serif;
     --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
@@ -76,10 +77,11 @@ body {
     color: var(--ink);
     background:
         linear-gradient(90deg, transparent 0 calc(20% - 1px), var(--line) calc(20% - 1px) 20%, transparent 20% calc(40% - 1px), var(--line) calc(40% - 1px) 40%, transparent 40% calc(60% - 1px), var(--line) calc(60% - 1px) 60%, transparent 60% calc(80% - 1px), var(--line) calc(80% - 1px) 80%, transparent 80%),
-        radial-gradient(circle at 18% 10%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 30%),
+        radial-gradient(circle at 18% 10%, rgba(67, 82, 94, 0.11), transparent 30%),
         linear-gradient(180deg, var(--paper), var(--paper-2));
     font-family: var(--body);
     text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
     transition: background 220ms ease, color 220ms ease;
 }
 
@@ -122,7 +124,7 @@ a {
     grid-template-columns: minmax(230px, 1fr) auto minmax(120px, 1fr);
     align-items: center;
     gap: 20px;
-    min-height: clamp(72px, 7.4vh, 88px);
+    min-height: var(--header-h);
     padding: 0 max(24px, calc((100vw - var(--shell)) / 2));
     border-bottom: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
     background: color-mix(in srgb, var(--paper) 82%, transparent);
@@ -130,12 +132,10 @@ a {
 }
 
 .brand,
-.top-nav,
 .theme-toggle,
 .eyebrow,
 .section-line,
 .search-box span,
-.filter-tabs,
 .item-meta,
 .reader-meta,
 .record-link,
@@ -174,7 +174,10 @@ a {
     padding: 5px;
     border: 1px solid var(--line);
     background: color-mix(in srgb, var(--surface-solid) 58%, transparent);
+    color: var(--ink);
+    font-family: var(--body);
     font-size: clamp(15px, 1vw, 17px);
+    font-weight: 520;
 }
 
 .top-nav a,
@@ -204,6 +207,7 @@ a {
     padding: 0 clamp(14px, 1.5vw, 20px);
     cursor: pointer;
     font-size: clamp(14px, 0.95vw, 16px);
+    font-weight: 650;
 }
 
 .top-nav a:hover,
@@ -224,24 +228,41 @@ main {
 
 .masthead {
     position: relative;
-    min-height: calc(100vh - 84px);
-    padding: clamp(42px, 5.8vh, 68px) 0 clamp(58px, 7vh, 84px);
+    width: 100vw;
+    min-height: 155vh;
+    margin-left: calc((100vw - var(--shell)) / -2);
+    padding: 0;
+    --hero-progress: 0;
+    --hero-step: 0;
 }
 
 .masthead-title {
-    position: relative;
-    min-height: clamp(560px, calc(100vh - 164px), 760px);
+    position: sticky;
+    top: var(--header-h);
+    width: 100vw;
+    height: calc(100vh - var(--header-h));
+    min-height: 560px;
     overflow: hidden;
     --mx: 50%;
     --my: 45%;
     --mask-size: clamp(142px, 22vmin, 260px);
     --line-max: calc(var(--mask-size) * 2.05);
-    border: 1px solid color-mix(in srgb, var(--line-strong) 76%, transparent);
+    border: 0;
     background:
-        radial-gradient(circle at 18% 18%, color-mix(in srgb, var(--accent-3) 8%, transparent), transparent 32%),
-        radial-gradient(circle at 82% 78%, color-mix(in srgb, var(--accent-2) 8%, transparent), transparent 36%),
-        linear-gradient(180deg, color-mix(in srgb, var(--paper) 96%, white), color-mix(in srgb, var(--paper-2) 52%, var(--paper) 48%));
+        radial-gradient(circle at 16% 18%, rgba(74, 83, 92, 0.08), transparent 34%),
+        radial-gradient(circle at 80% 76%, rgba(79, 86, 91, 0.08), transparent 38%),
+        linear-gradient(180deg, #f5f2eb, #ebe5da);
     isolation: isolate;
+    transform:
+        translateY(calc(var(--hero-step) * -18px))
+        scale(calc(1 - var(--hero-step) * 0.012));
+    opacity: calc(1 - var(--hero-step) * 0.16);
+    transition: opacity 220ms ease, transform 220ms ease;
+}
+
+.masthead[data-step="5"] .masthead-title {
+    opacity: 0;
+    pointer-events: none;
 }
 
 .masthead-title::before {
@@ -253,7 +274,7 @@ main {
     background:
         linear-gradient(90deg, transparent 0 calc(25% - 1px), var(--line) calc(25% - 1px) 25%, transparent 25% calc(50% - 1px), var(--line) calc(50% - 1px) 50%, transparent 50% calc(75% - 1px), var(--line) calc(75% - 1px) 75%, transparent 75%),
         linear-gradient(180deg, transparent 0 calc(33.33% - 1px), var(--line) calc(33.33% - 1px) 33.33%, transparent 33.33% calc(66.66% - 1px), var(--line) calc(66.66% - 1px) 66.66%, transparent 66.66%);
-    opacity: 0.72;
+    opacity: 0.86;
 }
 
 .masthead-title::after {
@@ -262,7 +283,7 @@ main {
     inset: 0;
     z-index: 5;
     pointer-events: none;
-    background: radial-gradient(circle var(--mask-size) at var(--mx) var(--my), transparent 0 calc(100% - 2px), color-mix(in srgb, var(--ink) 52%, transparent) calc(100% - 1px), transparent 100%);
+    background: radial-gradient(circle var(--mask-size) at var(--mx) var(--my), transparent 0 calc(100% - 2px), rgba(17, 24, 31, 0.62) calc(100% - 1px), transparent 100%);
 }
 
 .reveal-pattern,
@@ -312,10 +333,10 @@ main {
     overflow: hidden;
     color: #ede5d8;
     background:
-        radial-gradient(circle at var(--mx) var(--my), rgba(255, 255, 255, 0.08), transparent 48%),
-        linear-gradient(135deg, #181612, #242019 58%, #17211d);
-    font-size: clamp(17px, 1.18vw, 21px);
-    line-height: 1.45;
+        radial-gradient(circle at var(--mx) var(--my), rgba(255, 255, 255, 0.07), transparent 48%),
+        linear-gradient(135deg, #0f1418, #171d22 58%, #101820);
+    font-size: clamp(15px, 1.05vw, 19px);
+    line-height: 1.3;
     letter-spacing: 0;
     pointer-events: none;
     -webkit-mask-image: radial-gradient(circle var(--mask-size) at var(--mx) var(--my), #000 0 72%, transparent 73%);
@@ -329,40 +350,38 @@ main {
     left: var(--x);
     top: var(--y);
     width: min(var(--w), var(--line-max));
-    max-width: min(42vw, calc(100% - 48px));
+    max-width: none;
     padding: 6px 0;
-    color: color-mix(in srgb, #ede5d8 84%, transparent);
-    border-bottom: 1px solid rgba(237, 229, 216, 0.14);
+    color: color-mix(in srgb, #eef2f4 86%, transparent);
+    border-bottom: 1px solid rgba(226, 232, 236, 0.16);
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    overflow: visible;
+    text-overflow: clip;
     transform: translate(-50%, -50%);
 }
 
 .reveal-words span:nth-child(3n + 1) {
-    color: #d7b092;
+    color: #cbd3d8;
 }
 
 .reveal-words span:nth-child(4n) {
-    color: #abc3ad;
+    color: #d8dcdf;
 }
 
 .reveal-line.large {
-    font-size: 1.28em;
+    font-size: 1.22em;
     font-weight: 620;
 }
 
 .reveal-line.medium {
-    width: 76%;
     font-size: 1.05em;
 }
 
 .reveal-line.small {
-    color: color-mix(in srgb, #ede5d8 62%, transparent);
+    color: color-mix(in srgb, #eef2f4 68%, transparent);
 }
 
 .reveal-line.wide {
-    width: 100%;
     font-size: 1.16em;
 }
 
@@ -431,12 +450,16 @@ h2 {
     letter-spacing: -0.015em;
 }
 
+.latest-section {
+    display: flex;
+    justify-content: flex-end;
+    margin: 40px 0 104px;
+}
+
 .latest-panel {
-    position: absolute;
+    position: relative;
     z-index: 8;
-    right: clamp(22px, 4vw, 54px);
-    bottom: clamp(28px, 5vw, 70px);
-    width: min(430px, calc(100% - 44px));
+    width: min(520px, 100%);
     padding: 30px;
     background: var(--surface);
     border: 1px solid var(--line-strong);
@@ -461,8 +484,9 @@ h2 {
 .latest-meta,
 .item-meta,
 .reader-meta {
-    color: var(--faint);
+    color: var(--muted);
     font-size: 15px;
+    font-weight: 520;
 }
 
 .latest-title {
@@ -677,7 +701,7 @@ h2 {
     margin: 0 0 12px;
     font-size: clamp(24px, 2.35vw, 36px);
     line-height: 1.18;
-    font-weight: 560;
+    font-weight: 640;
     letter-spacing: -0.006em;
     text-wrap: pretty;
 }
@@ -685,7 +709,7 @@ h2 {
 .archive-row p {
     max-width: 78ch;
     margin: 0;
-    color: var(--muted);
+    color: color-mix(in srgb, var(--ink) 72%, var(--muted));
     font-size: 17px;
     line-height: 1.78;
     text-wrap: pretty;
@@ -878,12 +902,13 @@ h2 {
     }
 
     .masthead {
-        min-height: auto;
-        padding: 48px 0 54px;
+        min-height: 145vh;
+        padding: 0;
     }
 
     .masthead-title {
-        min-height: 520px;
+        height: calc(100vh - var(--header-h));
+        min-height: 540px;
     }
 
     .reveal-copy h1 {
@@ -904,8 +929,12 @@ h2 {
     .reveal-line.small,
     .reveal-line.wide {
         width: min(var(--w), var(--line-max));
-        max-width: 72vw;
+        max-width: 76vw;
         font-size: 15px;
+    }
+
+    .latest-section {
+        margin: 32px 0 76px;
     }
 
     .latest-panel {
