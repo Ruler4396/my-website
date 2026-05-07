@@ -334,7 +334,7 @@ function renderRevealField() {
 
     const rowMeta = Array.from({ length: 18 }, (_, index) => {
         const x = 50 + [0, -10, 8, -16, 13, -5, 17, -12, 5][index % 9];
-        const y = 6.5 + index * 5.2;
+        const y = 5.5 + index * 5.25;
         const width = [118, 106, 112, 124, 102, 116][index % 6];
         const scale = ["small", "medium", "large", "small", "wide", "medium"][index % 6];
         return [x, y, width, scale];
@@ -472,8 +472,9 @@ function initRevealField() {
     let scrollTicking = false;
 
     const updateMetrics = () => {
-        const radiusPx = Math.round((2.5 / 2.54) * 96);
-        field.style.setProperty("--mask-size", "2.5cm");
+        const radiusPx = Math.round((3 / 2.54) * 96);
+        field.style.setProperty("--mask-core", "3cm");
+        field.style.setProperty("--mask-size", "4.25cm");
         field.style.setProperty("--line-max", `${Math.round(radiusPx * 2.35)}px`);
     };
 
