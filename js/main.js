@@ -317,8 +317,12 @@ function renderRevealField() {
             const cleaned = sanitizeInline(item.markdown);
             const sentences = cleaned
                 .split(/(?<=[。！？!?；;])\s*/)
+                .flatMap((sentence) => {
+                    const trimmed = sentence.trim();
+                    return trimmed.length > 30 ? trimmed.split(/(?<=[，,、：:])\s*/) : [trimmed];
+                })
                 .map((part) => part.trim())
-                .filter((part) => part.length >= 10 && part.length <= 90);
+                .filter((part) => part.length >= 8 && part.length <= 30);
             return sentences.length ? sentences : [item.excerpt || item.title];
         })
         .filter(Boolean)
@@ -328,21 +332,20 @@ function renderRevealField() {
         ? sourceSnippets
         : ["把内容从装饰里剥离出来", "索引不是答案，是入口", "文字需要反复经过"];
 
-    const map = Array.from({ length: 72 }, (_, index) => {
-        const column = index % 6;
-        const row = Math.floor(index / 6);
-        const jitterX = ((index * 17) % 9) - 4;
-        const jitterY = ((index * 11) % 7) - 3;
-        const x = 6 + column * 18 + jitterX;
-        const y = 6 + row * 8 + jitterY;
-        const width = [24, 30, 36, 28, 42, 32][index % 6];
+    const rowMeta = Array.from({ length: 18 }, (_, index) => {
+        const x = 50 + [0, -10, 8, -16, 13, -5, 17, -12, 5][index % 9];
+        const y = 6.5 + index * 5.2;
+        const width = [118, 106, 112, 124, 102, 116][index % 6];
         const scale = ["small", "medium", "large", "small", "wide", "medium"][index % 6];
         return [x, y, width, scale];
     });
 
-    elements.revealWords.innerHTML = map.map(([x, y, width, scale], index) => {
-        const text = state.revealSnippets[index % state.revealSnippets.length];
-        return `<span class="reveal-line ${scale}" style="--x:${x}%;--y:${y}%;--w:${width}ch;--i:${index}">${escapeHtml(text)}</span>`;
+    elements.revealWords.innerHTML = rowMeta.map(([x, y, width, scale], index) => {
+        const text = Array.from({ length: 8 }, (_, slot) => {
+            const snippetIndex = (index * 5 + slot * 3) % state.revealSnippets.length;
+            return state.revealSnippets[snippetIndex];
+        }).join("     ");
+        return `<span class="reveal-line ${scale}" style="--x:${x}%;--y:${y}%;--w:${width}vw;--i:${index}">${escapeHtml(text)}</span>`;
     }).join("");
 }
 
@@ -469,12 +472,9 @@ function initRevealField() {
     let scrollTicking = false;
 
     const updateMetrics = () => {
-        const rect = field.getBoundingClientRect();
-        const viewportMin = Math.min(window.innerWidth, window.innerHeight);
-        const fieldMin = Math.min(rect.width, rect.height);
-        const radius = Math.round(Math.max(190, Math.min(360, Math.min(viewportMin, fieldMin) * 0.34)));
-        field.style.setProperty("--mask-size", `${radius}px`);
-        field.style.setProperty("--line-max", `${Math.round(radius * 2.05)}px`);
+        const radiusPx = Math.round((2.5 / 2.54) * 96);
+        field.style.setProperty("--mask-size", "2.5cm");
+        field.style.setProperty("--line-max", `${Math.round(radiusPx * 2.35)}px`);
     };
 
     const setPoint = (clientX, clientY) => {
@@ -493,9 +493,12 @@ function initRevealField() {
         const rect = masthead.getBoundingClientRect();
         const range = Math.max(1, rect.height - window.innerHeight);
         const progress = Math.max(0, Math.min(1, -rect.top / range));
-        const step = Math.min(5, Math.floor(progress * 6));
-        masthead.style.setProperty("--hero-progress", progress.toFixed(3));
+        const easedProgress = Math.max(0, Math.min(1, (progress - 0.12) / 0.88));
+        const step = Math.min(8, Math.floor(easedProgress * 9));
+        const progressValue = progress.toFixed(3);
+        masthead.style.setProperty("--hero-progress", progressValue);
         masthead.style.setProperty("--hero-step", step);
+        document.documentElement.style.setProperty("--hero-progress", progressValue);
         masthead.dataset.step = String(step);
     };
 
