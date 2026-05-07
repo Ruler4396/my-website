@@ -482,12 +482,43 @@ function initRevealField() {
     }
     const masthead = document.querySelector(".masthead");
     let scrollTicking = false;
+    let torchFrame = 0;
 
     const updateMetrics = () => {
         const radiusPx = Math.round((3 / 2.54) * 96);
         field.style.setProperty("--mask-core", "3cm");
-        field.style.setProperty("--mask-size", "4.25cm");
+        field.style.setProperty("--mask-size", "4.6cm");
+        field.style.setProperty("--torch-size", "4.6cm");
         field.style.setProperty("--line-max", `${Math.round(radiusPx * 2.35)}px`);
+    };
+
+    const updateTorch = (time = 0) => {
+        const t = time / 1000;
+        const pulse =
+            Math.sin(t * 1.55) * 0.5 +
+            Math.sin(t * 3.15 + 1.4) * 0.36 +
+            Math.sin(t * 5.9 + 2.8) * 0.2;
+        const lick = Math.sin(t * 7.2 + Math.sin(t * 1.1) * 0.9) * 0.22;
+        const driftX = Math.sin(t * 1.18 + 0.7) * 18 + Math.sin(t * 2.75) * 8.5;
+        const driftY = Math.cos(t * 0.96 + 1.9) * 16 + Math.sin(t * 3.05) * 7;
+        const outerCm = Math.max(4.06, Math.min(5.55, 4.78 + pulse * 0.46 + lick * 0.22));
+        const edgeCm = Math.max(0.38, Math.min(0.95, 0.62 + pulse * 0.16 + lick * 0.06));
+        const alpha = Math.max(0.48, Math.min(0.9, 0.66 + pulse * 0.16 + lick * 0.1));
+        const glow = Math.max(0.12, Math.min(0.34, 0.2 + pulse * 0.075 + lick * 0.05));
+        const smoke = Math.max(0.09, Math.min(0.27, 0.15 + pulse * 0.055 + lick * 0.03));
+
+        field.style.setProperty("--torch-x", `${driftX.toFixed(2)}px`);
+        field.style.setProperty("--torch-y", `${driftY.toFixed(2)}px`);
+        field.style.setProperty("--torch-x2", `${(-driftX * 1.85 + Math.sin(t * 0.91) * 9).toFixed(2)}px`);
+        field.style.setProperty("--torch-y2", `${(driftY * 1.65 + Math.cos(t * 0.83) * 8).toFixed(2)}px`);
+        field.style.setProperty("--torch-x3", `${(driftX * 1.05 + Math.cos(t * 1.56) * 24).toFixed(2)}px`);
+        field.style.setProperty("--torch-y3", `${(-driftY * 1.28 + Math.sin(t * 1.31) * 22).toFixed(2)}px`);
+        field.style.setProperty("--torch-size", `${outerCm.toFixed(3)}cm`);
+        field.style.setProperty("--torch-edge", `${edgeCm.toFixed(3)}cm`);
+        field.style.setProperty("--torch-alpha", alpha.toFixed(3));
+        field.style.setProperty("--torch-glow", glow.toFixed(3));
+        field.style.setProperty("--torch-smoke", smoke.toFixed(3));
+        torchFrame = requestAnimationFrame(updateTorch);
     };
 
     const setPoint = (clientX, clientY) => {
@@ -524,6 +555,16 @@ function initRevealField() {
 
     updateMetrics();
     updateScrollStep();
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        torchFrame = requestAnimationFrame(updateTorch);
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden) {
+                cancelAnimationFrame(torchFrame);
+                return;
+            }
+            torchFrame = requestAnimationFrame(updateTorch);
+        });
+    }
     window.addEventListener("resize", updateMetrics);
     window.addEventListener("resize", requestScrollStep);
     window.addEventListener("scroll", requestScrollStep, { passive: true });
