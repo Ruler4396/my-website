@@ -182,10 +182,10 @@ a {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    padding: 5px;
-    border: 1px solid var(--line);
-    background: color-mix(in srgb, var(--surface-solid) 58%, transparent);
+    gap: 10px;
+    padding: 0;
+    border: 0;
+    background: transparent;
     color: var(--ink);
     font-family: var(--body);
     font-size: clamp(15px, 1vw, 17px);
@@ -210,16 +210,21 @@ a {
 .top-nav a {
     min-height: 42px;
     padding: 0 clamp(14px, 1.5vw, 22px);
+    border-color: var(--line);
+    background: color-mix(in srgb, var(--surface-solid) 54%, transparent);
 }
 
 .theme-toggle {
     justify-self: end;
-    min-height: 46px;
+    width: 48px;
+    min-width: 48px;
+    height: 48px;
+    min-height: 48px;
+    border-radius: 999px;
     border-color: var(--line);
-    padding: 0 clamp(14px, 1.5vw, 20px);
+    padding: 0;
     cursor: pointer;
-    font-size: clamp(14px, 0.95vw, 16px);
-    font-weight: 650;
+    background: color-mix(in srgb, var(--surface-solid) 50%, transparent);
 }
 
 .top-nav a:hover,
@@ -230,7 +235,19 @@ a {
 .github-link:hover {
     border-color: var(--line-strong);
     background: color-mix(in srgb, var(--surface-solid) 72%, transparent);
-    transform: translateY(-1px);
+    box-shadow: 0 8px 22px color-mix(in srgb, var(--ink) 8%, transparent);
+    transform: translateY(-2px);
+}
+
+.theme-icon {
+    width: 20px;
+    height: 20px;
+    display: block;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
 
 main {
@@ -241,7 +258,7 @@ main {
 .masthead {
     position: relative;
     width: 100vw;
-    min-height: 215vh;
+    min-height: 300vh;
     margin-left: calc((100vw - var(--shell)) / -2);
     padding: 0;
     --hero-step: 0;
@@ -416,9 +433,9 @@ main {
 }
 
 .reveal-copy {
-    z-index: 3;
+    z-index: 6;
     display: grid;
-    grid-template-rows: auto 1fr auto;
+    grid-template-rows: auto 1fr;
     padding: clamp(34px, 4.8vw, 62px);
     pointer-events: none;
 }
@@ -436,37 +453,8 @@ p {
     margin-top: 0;
 }
 
-.reveal-copy h1 {
-    align-self: center;
-    display: inline-flex;
-    align-items: baseline;
-    gap: 0.02em;
-    margin: 0;
-    width: fit-content;
-    max-width: 100%;
-    font-family: var(--display);
-    font-size: clamp(86px, 12.8vw, 176px);
-    line-height: 0.9;
-    font-weight: 760;
-    letter-spacing: 0.01em;
-    font-feature-settings: "palt";
-    text-shadow: none;
-}
-
-.reveal-copy h1::after {
-    content: "";
-    width: clamp(84px, 18vw, 260px);
-    height: 2px;
-    margin-left: 0.1em;
-    background: color-mix(in srgb, var(--ink) 64%, transparent);
-    transform: translateY(-0.18em);
-}
-
-.reveal-copy h1 span:last-child {
-    color: var(--ink);
-}
-
 .masthead-note {
+    align-self: end;
     margin: 0;
     color: var(--faint);
     font-size: 15px;
@@ -481,13 +469,16 @@ h2 {
 }
 
 .latest-section {
-    position: relative;
-    z-index: 12;
+    position: absolute;
+    z-index: 8;
+    right: max(46px, calc((100vw - var(--shell)) / 2 + 22px));
+    top: clamp(118px, 18vh, 190px);
     display: flex;
     justify-content: flex-end;
-    margin: calc(-100vh * var(--hero-progress)) 0 104px;
-    transform: translateY(calc((1 - var(--hero-progress)) * 18vh));
-    transition: margin 180ms ease-out, transform 180ms ease-out;
+    width: min(520px, calc(100vw - 72px));
+    margin: 0;
+    transform: translateY(calc(var(--hero-step) * -4px));
+    transition: transform 220ms ease, opacity 220ms ease;
 }
 
 .latest-panel {
@@ -552,9 +543,12 @@ h2 {
 }
 
 .quote-strip {
+    position: relative;
+    z-index: 14;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 18px;
+    margin-top: -86vh;
     margin-bottom: 104px;
 }
 
@@ -936,21 +930,13 @@ h2 {
     }
 
     .masthead {
-        min-height: 210vh;
+        min-height: 280vh;
         padding: 0;
     }
 
     .masthead-title {
         height: calc(100vh - var(--header-h));
         min-height: 540px;
-    }
-
-    .reveal-copy h1 {
-        font-size: clamp(78px, 26vw, 124px);
-    }
-
-    .reveal-copy h1::after {
-        width: clamp(54px, 18vw, 96px);
     }
 
     .reveal-pattern {
@@ -966,8 +952,11 @@ h2 {
     }
 
     .latest-section {
-        margin: calc(-78vh * var(--hero-progress)) 0 76px;
-        transform: translateY(calc((1 - var(--hero-progress)) * 15vh));
+        top: clamp(185px, 25vh, 230px);
+        right: 15px;
+        left: 15px;
+        width: auto;
+        transform: none;
     }
 
     .latest-panel {
@@ -988,6 +977,10 @@ h2 {
     .category-grid,
     .archive-tools {
         grid-template-columns: 1fr;
+    }
+
+    .quote-strip {
+        margin-top: -72vh;
     }
 
     .quote-card:nth-child(2) {

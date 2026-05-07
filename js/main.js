@@ -306,7 +306,7 @@ function renderRevealField() {
         return;
     }
 
-    const patternTokens = ["RULER", "CONTENT", "ARCHIVE", "INDEX", "NOTES", "ESSAY", "MEMORY", "LANGUAGE", "文章", "笔记", "记忆", "文本"];
+    const patternTokens = ["CONTENT", "ARCHIVE", "INDEX", "NOTES", "ESSAY", "MEMORY", "LANGUAGE", "文章", "笔记", "记忆", "文本", "READING"];
     elements.revealPattern.innerHTML = patternTokens
         .map((token, index) => `<span class="pattern-token pattern-token-${index + 1}">${escapeHtml(token)}</span>`)
         .join("");
@@ -439,12 +439,24 @@ function renderAll() {
 
 function setTheme(theme, persist = true) {
     const dark = theme === "dark";
+    const moonIcon = `
+        <svg class="theme-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20.2 15.3A8.2 8.2 0 0 1 8.7 3.8a8.7 8.7 0 1 0 11.5 11.5Z"></path>
+        </svg>
+    `;
+    const sunIcon = `
+        <svg class="theme-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="4.3"></circle>
+            <path d="M12 2.8v2.1M12 19.1v2.1M4.4 4.4l1.5 1.5M18.1 18.1l1.5 1.5M2.8 12h2.1M19.1 12h2.1M4.4 19.6l1.5-1.5M18.1 5.9l1.5-1.5"></path>
+        </svg>
+    `;
     if (dark) {
         document.documentElement.setAttribute("data-theme", "dark");
     } else {
         document.documentElement.removeAttribute("data-theme");
     }
-    elements.themeToggle.textContent = dark ? "Light" : "Dark";
+    elements.themeToggle.innerHTML = dark ? sunIcon : moonIcon;
+    elements.themeToggle.setAttribute("aria-label", dark ? "切换到浅色主题" : "切换到深色主题");
     elements.themeToggle.setAttribute("aria-pressed", String(dark));
     const themeMeta = document.querySelector('meta[name="theme-color"]');
     themeMeta?.setAttribute("content", dark ? "#151412" : "#f3efe7");
@@ -494,7 +506,7 @@ function initRevealField() {
         const rect = masthead.getBoundingClientRect();
         const range = Math.max(1, rect.height - window.innerHeight);
         const progress = Math.max(0, Math.min(1, -rect.top / range));
-        const easedProgress = Math.max(0, Math.min(1, (progress - 0.12) / 0.88));
+        const easedProgress = Math.max(0, Math.min(1, (progress - 0.18) / 0.82));
         const step = Math.min(8, Math.floor(easedProgress * 9));
         const progressValue = progress.toFixed(3);
         masthead.style.setProperty("--hero-progress", progressValue);
