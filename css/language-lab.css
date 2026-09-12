@@ -315,7 +315,7 @@ select {
 }
 
 .phonology-grid {
-    grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.72fr);
+    grid-template-columns: minmax(0, 1fr);
     margin-top: 14px;
 }
 
@@ -335,9 +335,43 @@ select {
 
 .chip-grid,
 .topic-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+}
+
+.topic-card {
+    padding: 18px 20px;
+    border: 1px solid var(--line);
+    background: var(--panel);
+}
+
+.topic-card h3 {
+    margin: 0 0 8px;
+    color: var(--text);
+    font-size: 17px;
+}
+
+.topic-card p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.topic-linked {
+    margin-top: 10px;
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
+}
+
+.topic-linked span {
+    font-family: var(--ui);
+    font-size: 12px;
+    color: var(--accent);
+    border: 1px solid var(--line);
+    padding: 2px 8px;
 }
 
 .chip,
@@ -461,7 +495,7 @@ select {
 }
 
 .corpus-layout {
-    grid-template-columns: minmax(0, 1fr) minmax(340px, 0.8fr);
+    grid-template-columns: minmax(0, 1fr);
 }
 
 .example-list,
@@ -471,7 +505,11 @@ select {
 }
 
 .example-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.text-list {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
 }
 
 #lexicon-sentinel {
