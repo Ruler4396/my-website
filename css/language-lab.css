@@ -525,3 +525,43 @@ select {
         padding: 58px 0 64px;
     }
 }
+
+/* ── 渲染性能修复 ─────────────────────────────────────
+   字形 SVG 只有 viewBox、没有固有尺寸：2000+ 张未约束的图
+   会把整页排版撑到百万像素高，滚动/绘制全部卡顿。
+   必须显式定尺寸；离屏的行与卡片用 content-visibility 跳过排版。 */
+.word-native img,
+.example-native img,
+.sentence-native img {
+    width: auto;
+    height: 26px;
+    max-width: 100%;
+}
+
+.glyph-card > img {
+    width: 88px;
+    height: 88px;
+}
+
+.lexicon-row,
+.example-card,
+.text-card,
+.glyph-card {
+    content-visibility: auto;
+}
+
+.lexicon-row {
+    contain-intrinsic-size: auto 110px;
+}
+
+.glyph-card {
+    contain-intrinsic-size: auto 190px;
+}
+
+.example-card {
+    contain-intrinsic-size: auto 240px;
+}
+
+.text-card {
+    contain-intrinsic-size: auto 560px;
+}
