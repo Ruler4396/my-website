@@ -8,7 +8,7 @@ STATE_DIR="${SITE_ROOT}/.publish-state"
 STATE_FILE="${STATE_DIR}/obsidian-content.sha256"
 LOG_FILE="${SITE_ROOT}/obsidian-publish.log"
 LOCK_FILE="/tmp/myweb-obsidian-publish.lock"
-PUBLISH_CATEGORIES=(articles notes memories misc poetry)
+PUBLISH_CATEGORIES=(articles notes memories misc poetry works)
 
 log() {
   printf '[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*" | tee -a "$LOG_FILE"
