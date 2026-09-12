@@ -178,7 +178,7 @@ function renderLexicon() {
                         ${entry.derived_from ? `<span class="chip">from ${escapeHtml(entry.derived_from)}</span>` : '<span class="chip">root</span>'}
                     </div>
                     <div class="lexicon-chip-row">
-                        ${entry.tags.slice(0, 4).map((tag) => `<span class="chip">${escapeHtml(tag)}</span>`).join("")}
+                        ${entry.tags.filter((tag) => entry.derived_from || tag !== "root").slice(0, 4).map((tag) => `<span class="chip">${escapeHtml(tag)}</span>`).join("")}
                     </div>
                 </div>
                 <div>
