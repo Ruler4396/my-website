@@ -1,9 +1,13 @@
+const LEXICON_BATCH = 40;   // 词库分批加载：每批条数
+
 const data = window.languageLabData || null;
 
 const state = {
     query: "",
     pos: "all",
-    entryType: "root"
+    entryType: "root",
+    visibleLexicon: [],
+    renderedCount: 0
 };
 
 const elements = {
@@ -24,7 +28,7 @@ const elements = {
 };
 
 function escapeHtml(text) {
-    return String(text)
+    return String(text ?? "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
@@ -151,21 +155,8 @@ function getVisibleLexicon() {
     });
 }
 
-function renderLexicon() {
-    const visible = getVisibleLexicon();
-    const rootCount = data.lexicon.filter((entry) => !entry.derived_from).length;
-    const derivedCount = data.lexicon.length - rootCount;
-    const modeLabel =
-        state.entryType === "root"
-            ? `当前显示根词；派生词已折叠。根词 ${rootCount} 条，派生词 ${derivedCount} 条。`
-            : state.entryType === "derived"
-              ? `当前仅显示派生词。根词 ${rootCount} 条，派生词 ${derivedCount} 条。`
-              : `当前显示全部词条。根词 ${rootCount} 条，派生词 ${derivedCount} 条。`;
-    elements.lexiconMeta.textContent = `显示 ${visible.length} / ${data.lexicon.length} 条词条。${modeLabel}`;
-
-    elements.lexiconTable.innerHTML = visible
-        .map(
-            (entry) => `
+function lexiconRowHtml(entry) {
+    return `
             <article class="lexicon-row">
                 <div>
                     <h3 class="lexicon-heading">${escapeHtml(entry.gloss_zh)}</h3>
@@ -185,9 +176,43 @@ function renderLexicon() {
                     <p class="lexicon-definition">${escapeHtml(entry.definition_zh)}</p>
                 </div>
             </article>
-        `
-        )
-        .join("");
+        `;
+}
+
+function renderLexiconSlice() {
+    const visible = state.visibleLexicon;
+    const shown = visible.slice(0, state.renderedCount);
+    const rootCount = data.lexicon.filter((entry) => !entry.derived_from).length;
+    const derivedCount = data.lexicon.length - rootCount;
+    const modeLabel =
+        state.entryType === "root"
+            ? `当前显示根词；派生词已折叠。根词 ${rootCount} 条，派生词 ${derivedCount} 条。`
+            : state.entryType === "derived"
+              ? `当前仅显示派生词。根词 ${rootCount} 条，派生词 ${derivedCount} 条。`
+              : `当前显示全部词条。根词 ${rootCount} 条，派生词 ${derivedCount} 条。`;
+    const more = state.renderedCount < visible.length ? "（继续下滑加载更多）" : "";
+    elements.lexiconMeta.textContent = `显示 ${shown.length} / ${visible.length} 条词条。${modeLabel}${more}`;
+
+    elements.lexiconTable.innerHTML = shown.map(lexiconRowHtml).join("");
+}
+
+function renderLexicon() {
+    // 分批加载：首批只渲染 LEXICON_BATCH 条，滑近底部由哨兵触发追加
+    state.visibleLexicon = getVisibleLexicon();
+    state.renderedCount = Math.min(LEXICON_BATCH, state.visibleLexicon.length);
+    renderLexiconSlice();
+}
+
+function appendLexiconBatch() {
+    const visible = state.visibleLexicon;
+    if (state.renderedCount >= visible.length) {
+        return false;
+    }
+    const next = visible.slice(state.renderedCount, state.renderedCount + LEXICON_BATCH);
+    elements.lexiconTable.insertAdjacentHTML("beforeend", next.map(lexiconRowHtml).join(""));
+    state.renderedCount += next.length;
+    renderLexiconSlice();
+    return true;
 }
 
 function renderExamples() {
@@ -263,6 +288,29 @@ function init() {
     renderExamples();
     renderTexts();
     bindEvents();
+
+    // 滚动哨兵：接近词库底部时自动追加下一批（IO 与 scroll 双通道，append 幂等）
+    const maybeAppend = () => {
+        const bottom = elements.lexiconTable.getBoundingClientRect().bottom;
+        if (bottom < window.innerHeight + 600) {
+            appendLexiconBatch();
+        }
+    };
+
+    const sentinel = document.getElementById("lexicon-sentinel");
+    if (sentinel && "IntersectionObserver" in window) {
+        const io = new IntersectionObserver((entries) => {
+            for (const entry of entries) {
+                if (entry.isIntersecting) {
+                    appendLexiconBatch();
+                }
+            }
+        }, { rootMargin: "600px 0px" });
+        io.observe(sentinel);
+    }
+
+    window.addEventListener("scroll", maybeAppend, { passive: true });
+    maybeAppend();
 }
 
 document.addEventListener("DOMContentLoaded", init);

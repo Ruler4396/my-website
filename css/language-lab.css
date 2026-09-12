@@ -470,6 +470,14 @@ select {
     gap: 14px;
 }
 
+.example-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+#lexicon-sentinel {
+    height: 1px;
+}
+
 .example-native,
 .text-native {
     color: var(--accent);
@@ -512,6 +520,7 @@ select {
     .sound-columns,
     .lexicon-controls,
     .lexicon-row,
+    .example-list,
     .corpus-layout {
         grid-template-columns: 1fr;
     }
