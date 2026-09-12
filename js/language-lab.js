@@ -1,4 +1,5 @@
-const LEXICON_BATCH = 40;   // 词库分批加载：每批条数
+const LEXICON_BATCH = 12;   // 词库分批加载：每批条数（首批刻意很小）
+const EXAMPLE_BATCH = 16;   // 例句分批加载：每批条数
 
 const data = window.languageLabData || null;
 
@@ -7,7 +8,8 @@ const state = {
     pos: "all",
     entryType: "root",
     visibleLexicon: [],
-    renderedCount: 0
+    renderedCount: 0,
+    exampleCount: 0
 };
 
 const elements = {
@@ -215,10 +217,8 @@ function appendLexiconBatch() {
     return true;
 }
 
-function renderExamples() {
-    elements.exampleList.innerHTML = data.examples
-        .map(
-            (entry) => `
+function exampleCardHtml(entry) {
+    return `
             <article class="example-card">
                 <h4>${escapeHtml(entry.translation_zh)}</h4>
                 <div class="example-native">${entry.token_stream.map((token) => renderNativeTokens(token.native_tokens, token.native_form)).join("")}</div>
@@ -226,9 +226,29 @@ function renderExamples() {
                 <p class="sentence-line"><span class="sentence-label">Gloss</span>${escapeHtml(entry.gloss)}</p>
                 <p class="sentence-line"><span class="sentence-label">Notes</span><span class="example-meta">${escapeHtml(entry.notes)}</span></p>
             </article>
-        `
-        )
+        `;
+}
+
+function renderExampleSlice() {
+    elements.exampleList.innerHTML = data.examples
+        .slice(0, state.exampleCount)
+        .map(exampleCardHtml)
         .join("");
+}
+
+function renderExamples() {
+    state.exampleCount = Math.min(EXAMPLE_BATCH, data.examples.length);
+    renderExampleSlice();
+}
+
+function appendExampleBatch() {
+    if (state.exampleCount >= data.examples.length) {
+        return false;
+    }
+    const next = data.examples.slice(state.exampleCount, state.exampleCount + EXAMPLE_BATCH);
+    elements.exampleList.insertAdjacentHTML("beforeend", next.map(exampleCardHtml).join(""));
+    state.exampleCount += next.length;
+    return true;
 }
 
 function renderTexts() {
@@ -289,24 +309,35 @@ function init() {
     renderTexts();
     bindEvents();
 
-    // 滚动哨兵：接近词库底部时自动追加下一批（IO 与 scroll 双通道，append 幂等）
+    // 滚动哨兵：接近列表底部时自动追加下一批（IO 与 scroll 双通道，append 幂等）
     const maybeAppend = () => {
-        const bottom = elements.lexiconTable.getBoundingClientRect().bottom;
-        if (bottom < window.innerHeight + 600) {
+        if (elements.lexiconTable.getBoundingClientRect().bottom < window.innerHeight + 600) {
             appendLexiconBatch();
+        }
+        if (elements.exampleList.getBoundingClientRect().bottom < window.innerHeight + 600) {
+            appendExampleBatch();
         }
     };
 
-    const sentinel = document.getElementById("lexicon-sentinel");
-    if (sentinel && "IntersectionObserver" in window) {
+    if ("IntersectionObserver" in window) {
         const io = new IntersectionObserver((entries) => {
             for (const entry of entries) {
-                if (entry.isIntersecting) {
+                if (!entry.isIntersecting) {
+                    continue;
+                }
+                if (entry.target.id === "example-sentinel") {
+                    appendExampleBatch();
+                } else {
                     appendLexiconBatch();
                 }
             }
-        }, { rootMargin: "600px 0px" });
-        io.observe(sentinel);
+        }, { rootMargin: "700px 0px" });
+        for (const id of ["lexicon-sentinel", "example-sentinel"]) {
+            const sentinel = document.getElementById(id);
+            if (sentinel) {
+                io.observe(sentinel);
+            }
+        }
     }
 
     window.addEventListener("scroll", maybeAppend, { passive: true });
