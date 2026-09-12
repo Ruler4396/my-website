@@ -7,7 +7,7 @@
     <meta name="description" content="Ruler content archive.">
     <meta name="theme-color" content="#f3efe7">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23f3efe7'/%3E%3Cpath d='M18 48V16h15c8 0 13 4 13 11 0 5-3 9-8 10l10 11h-9L30 38h-5v10h-7Zm7-17h8c4 0 6-1 6-4s-2-4-6-4h-8v8Z' fill='%23181612'/%3E%3C/svg%3E">
-    <link rel="stylesheet" href="css/style.css?v=20260507g">
+    <link rel="stylesheet" href="css/style.css?v=20260912f">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
 </head>
 <body>
@@ -26,10 +26,18 @@
     </header>
 
     <main>
+        <div class="rails" aria-hidden="true"></div>
+
         <section class="masthead" id="current">
             <div class="masthead-title reveal-field" id="reveal-field" aria-label="文字探索区域">
                 <div class="reveal-pattern" id="reveal-pattern" aria-hidden="true"></div>
-                <div class="reveal-words" id="reveal-words" aria-hidden="true"></div>
+
+                <div class="flare-pos" id="flare-pos" aria-hidden="true">
+                    <div class="flare fire-flare">
+                        <canvas class="fire-canvas" id="fire-canvas"></canvas>
+                    </div>
+                </div>
+
                 <div class="reveal-copy">
                     <p class="eyebrow">/content</p>
                     <p class="masthead-note">move through the archive / read what remains</p>
@@ -90,7 +98,8 @@
         </article>
     </div>
 
-    <script src="js/content-data.js?v=20260507g"></script>
-    <script src="js/main.js?v=20260507g"></script>
+    <script src="js/content-data.js?v=20260912g"></script>
+    <script src="js/reveal-fire.js?v=20260912k"></script>
+    <script src="js/main.js?v=20260912g"></script>
 </body>
 </html>

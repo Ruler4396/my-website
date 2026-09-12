@@ -26,3 +26,6 @@ tcb.json
 # Obsidian publish runtime files
 .publish-state/
 backups/
+
+# 本地工具元数据与调试导出
+.workbuddy/

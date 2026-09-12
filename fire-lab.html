@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fire Lab — 火焰效果对比</title>
+    <style>
+        :root {
+            --bg: #0b0e12;
+            --card: #10151c;
+            --line: rgba(220, 228, 235, 0.14);
+            --ink: #e8edf2;
+            --muted: #8d99a4;
+            --faint: #5d6873;
+            --accent: #ffb46b;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 34px 20px 80px;
+            background:
+                radial-gradient(circle at 20% 0%, rgba(90, 60, 30, 0.12), transparent 40%),
+                var(--bg);
+            color: var(--ink);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .shell { max-width: 1180px; margin: 0 auto; }
+
+        header.page h1 {
+            margin: 0 0 10px;
+            font-size: 26px;
+            letter-spacing: 0.02em;
+        }
+
+        header.page p {
+            margin: 0;
+            max-width: 72ch;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        header.page .eyebrow {
+            font-family: Consolas, "SFMono-Regular", monospace;
+            font-size: 12px;
+            color: var(--accent);
+            letter-spacing: 0.14em;
+            margin-bottom: 14px;
+        }
+
+        .panel {
+            margin-top: 30px;
+            border: 1px solid var(--line);
+            background: var(--card);
+        }
+
+        .panel-head, .demo-head {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .panel-head h2, .demo-head h2 {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .demo-head .no {
+            font-family: Consolas, monospace;
+            color: var(--accent);
+            font-size: 13px;
+        }
+
+        .demo-head .tags {
+            color: var(--faint);
+            font-size: 12px;
+            font-family: Consolas, monospace;
+        }
+
+        .demo-head .fps {
+            margin-left: auto;
+            font-family: Consolas, monospace;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .demo-head .fps b { color: var(--accent); font-weight: 600; }
+
+        .stage {
+            display: flex;
+            justify-content: center;
+            padding: 18px;
+            background:
+                radial-gradient(circle at 50% 92%, rgba(70, 45, 20, 0.18), transparent 55%),
+                #05070a;
+        }
+
+        canvas.demo-fire {
+            width: 340px;
+            height: 440px;
+            display: block;
+            background: #05070a;
+        }
+
+        .demo-desc {
+            margin: 0;
+            padding: 13px 18px 16px;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.75;
+            border-top: 1px solid var(--line);
+        }
+
+        .grid {
+            margin-top: 26px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 22px;
+        }
+
+        @media (max-width: 900px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+
+        #preview-stage canvas {
+            width: min(860px, 100%);
+            height: 430px;
+        }
+    </style>
+</head>
+<body>
+    <div class="shell">
+        <header class="page">
+            <p class="eyebrow">FIRE LAB / 火焰方案对比</p>
+            <h1>选一种火焰</h1>
+            <p>下面是市面上主流的几类火焰实现，全部实时运行。火都是本色显示（橙黄色）方便判断形态；
+            最终做进首屏时会做成<strong>完全透明</strong>——火不动一粒颜色，只靠"烧穿后露出的墨字"成形（页面顶部那块就是最终形态的预览）。
+            每张卡片右上角有实时帧率与单帧耗时，供评估性能。</p>
+        </header>
+
+        <section class="panel" id="preview-panel">
+            <div class="panel-head">
+                <h2>最终形态预览 · 全透明火焰 + 文字揭示</h2>
+                <span class="tags">2 号噪声场 · 首屏实际效果</span>
+                <span class="fps" id="fps-0"></span>
+            </div>
+            <div class="stage" id="preview-stage">
+                <canvas id="c-preview"></canvas>
+            </div>
+            <p class="demo-desc">火不着色、不加光：墨字在火焰密度里显形，空白处只有一丝热幕保持火形。指针在画面上移动时火焰跟随（这里固定居中演示）。</p>
+        </section>
+
+        <div class="grid">
+            <section class="panel demo" data-demo="ca">
+                <div class="demo-head">
+                    <span class="no">01</span>
+                    <h2>元胞自动机火焰</h2>
+                    <span class="tags">DOOM 1993 · 像素游戏风 · 成本极低</span>
+                    <span class="fps"></span>
+                </div>
+                <div class="stage"><canvas class="demo-fire"></canvas></div>
+                <p class="demo-desc">热度从火底逐行向上传播、随机冷却。经典《DOOM》火焰，独立游戏怀旧风。边缘是格子状锯齿，火舌呈碎块状——信息密度低，但几乎零开销。</p>
+            </section>
+
+            <section class="panel demo" data-demo="noise">
+                <div class="demo-head">
+                    <span class="no">02</span>
+                    <h2>平滑噪声场火焰</h2>
+                    <span class="tags">Shadertoy 程序化 · 流体感 · 成本低</span>
+                    <span class="fps"></span>
+                </div>
+                <div class="stage"><canvas class="demo-fire"></canvas></div>
+                <p class="demo-desc">火体 = 底部包络 × 高度衰减 − 流动噪声侵蚀。噪声空间连续并向上滚动，轮廓是平滑曲线：火基圆润、越往上被啃出越多平滑火舌。2D 油画质感，单帧约 1ms。</p>
+            </section>
+
+            <section class="panel demo" data-demo="particle">
+                <div class="demo-head">
+                    <span class="no">03</span>
+                    <h2>粒子加色火焰</h2>
+                    <span class="tags">游戏引擎粒子系统 · 丰盈 · 成本中</span>
+                    <span class="fps"></span>
+                </div>
+                <div class="stage"><canvas class="demo-fire"></canvas></div>
+                <p class="demo-desc">上百个软粒子从火底升起，随生命周期从白→黄→橙→深红冷却，加色混合叠出体积感。现代游戏最常见的营火形态（Unity/Unreal 粒子系统的 2D 版）。</p>
+            </section>
+
+            <section class="panel demo" data-demo="fluid">
+                <div class="demo-head">
+                    <span class="no">04</span>
+                    <h2>真实流体模拟火焰</h2>
+                    <span class="tags">Navier-Stokes 稳定流体 · 涡旋 · 成本中高</span>
+                    <span class="fps"></span>
+                </div>
+                <div class="stage"><canvas class="demo-fire"></canvas></div>
+                <p class="demo-desc">解一版不可压流体方程：燃料注入 + 浮力 + 涡量守恒，火焰和热气真实地卷曲、缠绕、拖尾。著名的"WebGL 流体模拟"同族，运动最真实，计算量也最大。</p>
+            </section>
+
+            <section class="panel demo" data-demo="gl">
+                <div class="demo-head">
+                    <span class="no">05</span>
+                    <h2>WebGL 体积火焰</h2>
+                    <span class="tags">GPU Raymarch · 最像真火 · GPU 计费</span>
+                    <span class="fps"></span>
+                </div>
+                <div class="stage"><canvas class="demo-fire"></canvas></div>
+                <p class="demo-desc">片元着色器对火焰体做光线步进，累加三维噪声的发光密度——有内外层次、有辉光过渡，是 Shadertoy / AAA 里"真火"的质感。计算全在 GPU，CPU 几乎零负担。</p>
+            </section>
+
+            <section class="panel demo" data-demo="svg">
+                <div class="demo-head">
+                    <span class="no">06</span>
+                    <h2>SVG 滤镜火焰</h2>
+                    <span class="tags">feTurbulence 位移 · 声明式 · 成本低-中</span>
+                    <span class="fps"></span>
+                </div>
+                <div class="stage"><canvas class="demo-fire"></canvas></div>
+                <p class="demo-desc">渐变火形 + feTurbulence 位移滤镜 + 高斯模糊，纯矢量声明式实现，无逐帧计算。风格化、圆润、偏插画，动效由滤镜驱动（浏览器兼容性成本略高）。</p>
+            </section>
+        </div>
+    </div>
+
+    <script>
+    (function () {
+        "use strict";
+
+        window.addEventListener("error", (e) => {
+            document.title = "ERR: " + e.message + " @" + e.lineno;
+        });
+
+        const DPR = Math.min(1.5, window.devicePixelRatio || 1);
+        const SIM_HZ = 30;
+
+        // ── 通用火焰调色板：0..1 强度 → 深红→橙→黄→白芯 ──
+        const STOPS = [
+            [8, 1, 0], [64, 8, 2], [168, 32, 4],
+            [236, 96, 10], [255, 166, 38], [255, 224, 120], [255, 248, 214]
+        ];
+        function fireColor(t) {
+            const x = Math.min(0.999, Math.max(0, t)) * (STOPS.length - 1);
+            const i = x | 0;
+            const f = x - i;
+            const a = STOPS[i];
+            const b = STOPS[i + 1];
+            return [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f, a[2] + (b[2] - a[2]) * f];
+        }
+
+        function fitCanvas(canvas, cssW, cssH) {
+            canvas.width = Math.round(cssW * DPR);
+            canvas.height = Math.round(cssH * DPR);
+        }
+
+        // ── 值噪声（demo 0/2 共用） ──
+        const PERM = new Uint8Array(512);
+        (function () {
+            const p = new Uint8Array(256);
+            for (let i = 0; i < 256; i += 1) { p[i] = i; }
+            let s = 1337;
+            for (let i = 255; i > 0; i -= 1) {
+                s = (s * 16807) % 2147483647;
+                const j = s % (i + 1);
+                const t = p[i]; p[i] = p[j]; p[j] = t;
+            }
+            for (let i = 0; i < 512; i += 1) { PERM[i] = p[i & 255]; }
+        })();
+        function noise2(x, y) {
+            const xi = Math.floor(x), yi = Math.floor(y);
+            const xf = x - xi, yf = y - yi;
+            const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+            const x0 = xi & 255, y0 = yi & 255, x1 = (xi + 1) & 255, y1 = (yi + 1) & 255;
+            const aa = PERM[PERM[x0] + y0], ba = PERM[PERM[x1] + y0];
+            const ab = PERM[PERM[x0] + y1], bb = PERM[PERM[x1] + y1];
+            const p1 = aa + (ba - aa) * u;
+            const p2 = ab + (bb - ab) * u;
+            return (p1 + (p2 - p1) * v) * (1 / 255);
+        }
+        function fbm(x, y) {
+            return noise2(x, y) * 0.55 + noise2(x * 2.13, y * 2.13) * 0.3 + noise2(x * 4.41, y * 4.41) * 0.15;
+        }
+
+        // ══════════ 01 元胞自动机 ══════════
+        function makeCA(canvas) {
+            const W = 132, H = 172;
+            const sim = document.createElement("canvas");
+            sim.width = W; sim.height = H;
+            const sctx = sim.getContext("2d");
+            const img = sctx.createImageData(W, H);
+            const heat = new Float32Array(W * H);
+            const cw = canvas.width, ch = canvas.height;
+            const c2 = canvas.getContext("2d");
+
+            function seed() {
+                for (let x = (W * 0.2) | 0; x < (W * 0.8) | 0; x += 1) {
+                    heat[(H - 1) * W + x] = Math.random() < 0.55 ? 1 : 0.45 + Math.random() * 0.3;
+                }
+            }
+            function step() {
+                for (let y = 0; y < H - 1; y += 1) {
+                    const off = y * W, below = off + W;
+                    for (let x = 1; x < W - 1; x += 1) {
+                        const sx = x + ((Math.random() * 3) | 0) - 1;
+                        let v = heat[below + sx] - Math.random() * 0.015;
+                        v -= (y / H) * (y / H) * 0.006;
+                        heat[off + x] = v > 0 ? v : 0;
+                    }
+                }
+                seed();
+                const d = img.data;
+                for (let i = 0, n = W * H; i < n; i += 1) {
+                    const v = heat[i];
+                    const rgb = fireColor(Math.pow(v, 1.15));
+                    d[i * 4] = rgb[0]; d[i * 4 + 1] = rgb[1]; d[i * 4 + 2] = rgb[2];
+                    d[i * 4 + 3] = v > 0.02 ? 255 : 0;
+                }
+                sctx.putImageData(img, 0, 0);
+            }
+            return {
+                frame() {
+                    step();
+                    c2.imageSmoothingEnabled = false;   // 保留像素颗粒：这就是该方案的质感
+                    c2.drawImage(sim, 0, 0, cw, ch);
+                }
+            };
+        }
+
+        // ══════════ 02 平滑噪声场 ══════════
+        function makeNoise(canvas) {
+            const W = 92, H = 120;
+            const sim = document.createElement("canvas");
+            sim.width = W; sim.height = H;
+            const sctx = sim.getContext("2d");
+            const img = sctx.createImageData(W, H);
+            const cw = canvas.width, ch = canvas.height;
+            const c2 = canvas.getContext("2d");
+            const HALF = 0.3, REACH = 0.82;
+            const win = new Float32Array(W);
+            for (let x = 0; x < W; x += 1) {
+                const u = (x / (W - 1) - 0.5) / HALF + 0.5;
+                win[x] = Math.pow(Math.sin(Math.PI * Math.min(1, Math.max(0, u))), 0.75);
+            }
+            let t = Math.random() * 100;
+
+            function step() {
+                t += 1 / SIM_HZ;
+                const rise = t * 1.05;
+                const sway = (Math.sin(t * 0.6) * 0.5 + Math.sin(t * 0.23 + 1.4) * 0.3) * 0.05;
+                const d = img.data;
+                for (let row = 0; row < H; row += 1) {
+                    const up = 1 - row / (H - 1);                   // 0 火底（下缘）→ 1 火尖（上缘）
+                    const fade = Math.max(0, 1 - up / REACH);
+                    const ero = 0.3 + 1.6 * up * up;
+                    const span = HALF * (1 - 0.8 * up * up * (3 - 2 * up));
+                    const swayU = sway * up * up;
+                    for (let col = 0; col < W; col += 1) {
+                        const u = col / (W - 1);
+                        const su = u + swayU;
+                        const winT = Math.min(1, Math.max(0, (u - 0.5) / span + 0.5));
+                        const w = Math.pow(Math.sin(Math.PI * winT), 0.75);
+                        const n = fbm(su * 3.1 + 13.7, (1 - up) * 2.5 + rise);
+                        const s = fade * w * 1.5 - (n - 0.5) * ero;
+                        const idx = (row * W + col) * 4;
+                        if (s > 0.03) {
+                            let a = s * 2.3;
+                            if (a > 1) a = 1;
+                            a = Math.pow(a, 1.3);
+                            const n2 = noise2(su * 6.4 + 31.7, (1 - up) * 4.6 + rise * 1.5);
+                            const bright = 0.85 + (n2 - 0.5) * 0.5;
+                            const rgb = fireColor(a * bright);
+                            d[idx] = rgb[0]; d[idx + 1] = rgb[1]; d[idx + 2] = rgb[2];
+                            d[idx + 3] = 255;
+                        } else {
+                            d[idx + 3] = 0;
+                        }
+                    }
+                }
+                sctx.putImageData(img, 0, 0);
+            }
+            return {
+                frame() {
+                    step();
+                    c2.imageSmoothingEnabled = true;
+                    c2.imageSmoothingQuality = "high";
+                    c2.clearRect(0, 0, cw, ch);
+                    c2.drawImage(sim, 0, 0, cw, ch);
+                }
+            };
+        }
+
+        // ══════════ 03 粒子加色 ══════════
+        function makeParticle(canvas) {
+            const cw = canvas.width, ch = canvas.height;
+            const c2 = canvas.getContext("2d");
+            // 预渲染 14 档色相精灵（白芯→黄→橙→深红→熄灭）
+            const SPRITES = 14, SIZE = 72;
+            const sprites = [];
+            for (let i = 0; i < SPRITES; i += 1) {
+                const s = document.createElement("canvas");
+                s.width = SIZE; s.height = SIZE;
+                const sc = s.getContext("2d");
+                const t = i / (SPRITES - 1);
+                const [r, g, b] = fireColor(0.25 + t * 0.75);
+                const fade = 1 - t * 0.55;
+                const grad = sc.createRadialGradient(SIZE / 2, SIZE / 2, 0, SIZE / 2, SIZE / 2, SIZE / 2);
+                grad.addColorStop(0, `rgba(${r | 0},${g | 0},${b | 0},${0.55 * fade})`);
+                grad.addColorStop(0.45, `rgba(${r | 0},${g | 0},${b | 0},${0.2 * fade})`);
+                grad.addColorStop(1, "rgba(0,0,0,0)");
+                sc.fillStyle = grad;
+                sc.fillRect(0, 0, SIZE, SIZE);
+                sprites.push(s);
+            }
+            const P = [];
+            const COUNT = 130;
+            function spawn(p) {
+                p.x = cw / 2 + (Math.random() - 0.5) * cw * 0.24;
+                p.y = ch * 0.98 + Math.random() * 14;
+                p.vx = (Math.random() - 0.5) * 26;
+                p.vy = -(70 + Math.random() * 120) * (ch / 440);
+                p.life = 0;
+                p.max = 0.8 + Math.random() * 0.9;
+                p.size = (26 + Math.random() * 46) * (cw / 340);
+                p.wob = Math.random() * Math.PI * 2;
+            }
+            for (let i = 0; i < COUNT; i += 1) {
+                const p = {};
+                spawn(p);
+                p.life = Math.random() * p.max;   // 错峰启动
+                P.push(p);
+            }
+            let last = 0;
+            return {
+                frame(ts) {
+                    const dt = last ? Math.min(0.05, (ts - last) / 1000) : 0.016;
+                    last = ts;
+            // 运动模糊式淡出，而不是硬清屏
+                    c2.globalCompositeOperation = "source-over";
+                    c2.fillStyle = "rgba(5, 7, 10, 0.32)";
+                    c2.fillRect(0, 0, cw, ch);
+                    c2.globalCompositeOperation = "lighter";
+                    for (const p of P) {
+                        p.life += dt;
+                        if (p.life >= p.max) { spawn(p); }
+                        const k = p.life / p.max;                 // 0 诞生 → 1 熄灭
+                        p.vy -= 34 * dt;                          // 浮力
+                        p.vx += Math.sin(ts * 0.002 + p.wob) * 16 * dt + (Math.random() - 0.5) * 8 * dt;
+                        p.x += p.vx * dt;
+                        p.y += p.vy * dt;
+                        const t = k;
+                        const sprite = sprites[Math.min(SPRITES - 1, (t * (SPRITES - 1)) | 0)];
+                        const s = p.size * (1 - t * 0.75);
+                        c2.drawImage(sprite, p.x - s / 2, p.y - s / 2, s, s);
+                    }
+                    c2.globalCompositeOperation = "source-over";
+                }
+            };
+        }
+
+        // ══════════ 04 流体模拟 ══════════
+        function makeFluid(canvas) {
+            const NX = 72, NY = 96, N = NX * NY;
+            const u = new Float32Array(N), v = new Float32Array(N);
+            const du = new Float32Array(N), dv = new Float32Array(N);
+            const dye = new Float32Array(N), ddye = new Float32Array(N);
+            const p = new Float32Array(N), div = new Float32Array(N);
+            const curl = new Float32Array(N);
+            const sim = document.createElement("canvas");
+            sim.width = NX; sim.height = NY;
+            const sctx = sim.getContext("2d");
+            const img = sctx.createImageData(NX, NY);
+            const cw = canvas.width, ch = canvas.height;
+            const c2 = canvas.getContext("2d");
+
+            function sample(f, x, y) {
+                x = Math.max(0.5, Math.min(NX - 1.5, x));
+                y = Math.max(0.5, Math.min(NY - 1.5, y));
+                const xi = x | 0, yi = y | 0;
+                const fx = x - xi, fy = y - yi;
+                const i = xi + NX * yi;
+                const a = f[i], b = f[i + 1], c = f[i + NX], d = f[i + NX + 1];
+                return a + (b - a) * fx + (c - a) * fy + (a - b - c + d) * fx * fy;
+            }
+
+            function step() {
+                // 注入燃料：火底中央，带随机扰动的向上初速
+                const x0 = (NX * 0.32) | 0, x1 = (NX * 0.68) | 0;
+                for (let x = x0; x <= x1; x += 1) {
+                    const i = x + NX * (NY - 2);
+                    dye[i] = Math.min(1.7, dye[i] + 0.5 + Math.random() * 0.35);
+                    v[i] -= 1.6 + Math.random() * 1.2;
+                    u[i] += (Math.random() - 0.5) * 0.8;
+                }
+                // 浮力：染料越浓升力越大；同时整体耗散（燃料烧尽=冷却）
+                for (let y = 1; y < NY - 1; y += 1) {
+                    for (let x = 1; x < NX - 1; x += 1) {
+                        const i = x + NX * y;
+                        v[i] -= dye[i] * 0.055;
+                        u[i] *= 0.985; v[i] *= 0.985;
+                        dye[i] *= 0.988;
+                    }
+                }
+                // 涡量约束：把该卷的火舌卷起来（流体感的灵魂）
+                for (let y = 2; y < NY - 2; y += 1) {
+                    for (let x = 2; x < NX - 2; x += 1) {
+                        const i = x + NX * y;
+                        curl[i] = (v[i + 1] - v[i - 1]) - (u[i + NX] - u[i - NX]);
+                    }
+                }
+                for (let y = 2; y < NY - 2; y += 1) {
+                    for (let x = 2; x < NX - 2; x += 1) {
+                        const i = x + NX * y;
+                        const dx = (Math.abs(curl[i + 1]) - Math.abs(curl[i - 1])) * 0.5;
+                        const dy = (Math.abs(curl[i + NX]) - Math.abs(curl[i - NX])) * 0.5;
+                        const len = Math.sqrt(dx * dx + dy * dy) + 1e-5;
+                        u[i] += (dx / len) * curl[i] * 0.16;
+                        v[i] += (dy / len) * curl[i] * 0.16;
+                    }
+                }
+                // 半拉格朗日回溯（把平流场和染料一起搬回去）
+                // v 正方向 = 数组 y+ （向下），负 v 即向上飘升
+                for (let y = 1; y < NY - 1; y += 1) {
+                    for (let x = 1; x < NX - 1; x += 1) {
+                        const i = x + NX * y;
+                        du[i] = sample(u, x - u[i], y - v[i]);
+                        dv[i] = sample(v, x - u[i], y - v[i]);
+                        ddye[i] = sample(dye, x - u[i], y - v[i]);
+                    }
+                }
+                u.set(du); v.set(dv); dye.set(ddye);
+                // 压力投影（不可压），10 轮 Jacobi
+                for (let y = 1; y < NY - 1; y += 1) {
+                    for (let x = 1; x < NX - 1; x += 1) {
+                        const i = x + NX * y;
+                        div[i] = (u[i + 1] - u[i - 1] + v[i + NX] - v[i - NX]) * 0.5;
+                        p[i] = 0;
+                    }
+                }
+                for (let k = 0; k < 10; k += 1) {
+                    for (let y = 1; y < NY - 1; y += 1) {
+                        for (let x = 1; x < NX - 1; x += 1) {
+                            const i = x + NX * y;
+                            p[i] = (p[i - 1] + p[i + 1] + p[i - NX] + p[i + NX] - div[i]) * 0.25;
+                        }
+                    }
+                }
+                for (let y = 1; y < NY - 1; y += 1) {
+                    for (let x = 1; x < NX - 1; x += 1) {
+                        const i = x + NX * y;
+                        u[i] -= (p[i + 1] - p[i - 1]) * 0.5;
+                        v[i] -= (p[i + NX] - p[i - NX]) * 0.5;
+                    }
+                }
+                // 渲染：染料浓度 → 火焰调色板
+                const d = img.data;
+                for (let i = 0; i < N; i += 1) {
+                    const t = dye[i] / 1.5;
+                    const idx = i * 4;
+                    if (t > 0.02) {
+                        const rgb = fireColor(Math.pow(t, 0.8));
+                        d[idx] = rgb[0]; d[idx + 1] = rgb[1]; d[idx + 2] = rgb[2];
+                        d[idx + 3] = Math.min(255, t * 500);
+                    } else {
+                        d[idx + 3] = 0;
+                    }
+                }
+                sctx.putImageData(img, 0, 0);
+            }
+            return {
+                frame() {
+                    step();
+                    c2.imageSmoothingEnabled = true;
+                    c2.imageSmoothingQuality = "high";
+                    c2.clearRect(0, 0, cw, ch);
+                    c2.drawImage(sim, 0, 0, cw, ch);
+                }
+            };
+        }
+
+        // ══════════ 05 WebGL 体积火焰 ══════════
+        function makeGL(canvas) {
+            const gl = canvas.getContext("webgl", { antialias: false, alpha: false });
+            if (!gl) {
+                return { frame() {}, failed: true };
+            }
+            const vs = `
+                attribute vec2 a;
+                void main(){ gl_Position = vec4(a, 0., 1.); }
+            `;
+            const fs = `
+                precision mediump float;
+                uniform vec2 res;
+                uniform float t;
+                float hash(vec3 p){
+                    p = fract(p * 0.3183099 + 0.1);
+                    p *= 17.0;
+                    return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+                }
+                float noise(vec3 x){
+                    vec3 i = floor(x); vec3 f = fract(x);
+                    f = f * f * (3.0 - 2.0 * f);
+                    float n000 = hash(i);
+                    float n100 = hash(i + vec3(1.,0.,0.));
+                    float n010 = hash(i + vec3(0.,1.,0.));
+                    float n110 = hash(i + vec3(1.,1.,0.));
+                    float n001 = hash(i + vec3(0.,0.,1.));
+                    float n101 = hash(i + vec3(1.,0.,1.));
+                    float n011 = hash(i + vec3(0.,1.,1.));
+                    float n111 = hash(i + vec3(1.,1.,1.));
+                    return mix(
+                        mix(mix(n000, n100, f.x), mix(n010, n110, f.x), f.y),
+                        mix(mix(n001, n101, f.x), mix(n011, n111, f.x), f.y),
+                        f.z);
+                }
+                float fbm(vec3 p){
+                    return noise(p) * 0.55 + noise(p * 2.03) * 0.3 + noise(p * 4.01) * 0.15;
+                }
+                vec3 fireRamp(float k){
+                    k = clamp(k, 0., 1.);
+                    vec3 c1 = vec3(0.03, 0.004, 0.0);
+                    vec3 c2 = vec3(0.55, 0.08, 0.01);
+                    vec3 c3 = vec3(0.95, 0.42, 0.05);
+                    vec3 c4 = vec3(1.0, 0.75, 0.25);
+                    vec3 c5 = vec3(1.0, 0.96, 0.82);
+                    vec3 c = mix(c1, c2, smoothstep(0.0, 0.3, k));
+                    c = mix(c, c3, smoothstep(0.3, 0.6, k));
+                    c = mix(c, c4, smoothstep(0.6, 0.82, k));
+                    c = mix(c, c5, smoothstep(0.82, 1.0, k));
+                    return c;
+                }
+                void main(){
+                    vec2 uv = gl_FragCoord.xy / res;
+                    float x = (uv.x - 0.5) * 2.4;
+                    float h = uv.y;                    // 0 底 → 1 顶
+                    float reach = 0.8;
+                    vec3 acc = vec3(0.);
+                    float trans = 1.0;
+                    for (int i = 0; i < 16; i++) {
+                        float fi = (float(i) + 0.5) / 16.0;
+                        float z = fi * 2.6;
+                        float hh = h + fi * 0.012;
+                        float radius = 0.56 * pow(max(0., 1.0 - hh / reach), 1.35) * (0.75 + 0.25 * sin(hh * 9.0));
+                        float shell = 1.0 - smoothstep(radius * 0.2, radius, abs(x));
+                        float dens = shell * max(0., 1.0 - hh / reach) * 1.8;
+                        if (dens > 0.001) {
+                            float n = fbm(vec3(x * 2.6, hh * 2.2 - t * 1.55, z + t * 0.22));
+                            dens *= smoothstep(0.18, 0.62, n + (1.0 - hh) * 0.42);
+                            float heat = dens * (1.15 - hh) * trans * 0.62;
+                            acc += fireRamp(heat) * dens * 0.34;
+                            trans *= 1.0 - min(0.9, dens * 1.2);
+                        }
+                        if (trans < 0.05) break;
+                    }
+                    vec3 col = acc;
+                    // 底部辉光余烬
+                    col += vec3(1.0, 0.45, 0.1) * 0.12 * max(0., 1.0 - h * 7.0);
+                    gl_FragColor = vec4(col, 1.0);
+                }
+            `;
+            function compile(type, src) {
+                const sh = gl.createShader(type);
+                gl.shaderSource(sh, src);
+                gl.compileShader(sh);
+                if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
+                    console.error(gl.getShaderInfoLog(sh));
+                    return null;
+                }
+                return sh;
+            }
+            const vs2 = compile(gl.VERTEX_SHADER, vs);
+            const fs2 = compile(gl.FRAGMENT_SHADER, fs);
+            if (!vs2 || !fs2) {
+                return { frame() {}, failed: true };
+            }
+            const prog = gl.createProgram();
+            gl.attachShader(prog, vs2);
+            gl.attachShader(prog, fs2);
+            gl.linkProgram(prog);
+            gl.useProgram(prog);
+            const buf = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+            const loc = gl.getAttribLocation(prog, "a");
+            gl.enableVertexAttribArray(loc);
+            gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+            gl.uniform2f(gl.getUniformLocation(prog, "res"), canvas.width, canvas.height);
+            const tLoc = gl.getUniformLocation(prog, "t");
+            return {
+                frame(ts) {
+                    gl.uniform1f(tLoc, ts / 1000);
+                    gl.drawArrays(gl.TRIANGLES, 0, 3);
+                }
+            };
+        }
+
+        // ══════════ 06 SVG 滤镜火焰 ══════════
+        function makeSVG(stage) {
+            const W = 340, H = 440;
+            stage.innerHTML = `
+                <svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;background:#05070a">
+                    <defs>
+                        <linearGradient id="fire-grad" x1="0" y1="1" x2="0" y2="0">
+                            <stop offset="0" stop-color="#b81e04"/>
+                            <stop offset="0.35" stop-color="#f2610a"/>
+                            <stop offset="0.65" stop-color="#ffa62b"/>
+                            <stop offset="0.88" stop-color="#ffe08a"/>
+                            <stop offset="1" stop-color="#fff8dd"/>
+                        </linearGradient>
+                        <filter id="fire-wobble" x="-40%" y="-20%" width="180%" height="150%">
+                            <feTurbulence id="fire-turb" type="fractalNoise" baseFrequency="0.012 0.055" numOctaves="3" seed="7" result="n"/>
+                            <feDisplacementMap in="SourceGraphic" in2="n" scale="30" xChannelSelector="R" yChannelSelector="G"/>
+                            <feGaussianBlur stdDeviation="2.2"/>
+                        </filter>
+                        <filter id="fire-soft"><feGaussianBlur stdDeviation="9"/></filter>
+                    </defs>
+                    <g filter="url(#fire-soft)" opacity="0.55" id="fire-glow">
+                        <path d="M170 ${H * 0.94} C ${W * 0.30} ${H * 0.66}, ${W * 0.34} ${H * 0.4}, 170 ${H * 0.2} C ${W * 0.66} ${H * 0.4}, ${W * 0.70} ${H * 0.66}, 170 ${H * 0.94} Z" fill="#f2610a"/>
+                    </g>
+                    <g filter="url(#fire-wobble)" id="fire-body">
+                        <path d="M170 ${H * 0.96} C ${W * 0.28} ${H * 0.68}, ${W * 0.35} ${H * 0.42}, 170 ${H * 0.22} C ${W * 0.65} ${H * 0.42}, ${W * 0.72} ${H * 0.68}, 170 ${H * 0.96} Z" fill="url(#fire-grad)" opacity="0.92"/>
+                        <path d="M170 ${H * 0.96} C ${W * 0.37} ${H * 0.72}, ${W * 0.41} ${H * 0.5}, 170 ${H * 0.3} C ${W * 0.59} ${H * 0.5}, ${W * 0.63} ${H * 0.72}, 170 ${H * 0.96} Z" fill="#ffe08a" opacity="0.85"/>
+                        <path d="M170 ${H * 0.96} C ${W * 0.44} ${H * 0.8}, ${W * 0.46} ${H * 0.62}, 170 ${H * 0.44} C ${W * 0.54} ${H * 0.62}, ${W * 0.56} ${H * 0.8}, 170 ${H * 0.96} Z" fill="#fff8dd" opacity="0.9"/>
+                    </g>
+                </svg>
+            `;
+            const turb = stage.querySelector("#fire-turb");
+            const body = stage.querySelector("#fire-body");
+            const glow = stage.querySelector("#fire-glow");
+            let last = 0, acc = 0, seed = 7;
+            return {
+                frame(ts) {
+                    const dt = last ? Math.min(0.05, (ts - last) / 1000) : 0.016;
+                    last = ts;
+                    acc += dt;
+                    // 滤镜参数低频抖动 + 群组呼吸缩放，模拟火舌舔动
+                    if (acc > 0.12) {
+                        acc = 0;
+                        seed = (seed % 60) + 1;
+                        turb.setAttribute("seed", String(seed));
+                        const fy = 0.05 + Math.sin(ts * 0.0021) * 0.012;
+                        turb.setAttribute("baseFrequency", `0.012 ${fy.toFixed(4)}`);
+                    }
+                    const s = 1 + Math.sin(ts * 0.0031) * 0.02;
+                    body.setAttribute("transform", `translate(${W / 2} ${H * 0.96}) scale(1 ${s.toFixed(4)}) translate(${-W / 2} ${-H * 0.96})`);
+                    glow.setAttribute("transform", `translate(${W / 2} ${H * 0.94}) scale(${(1 + Math.sin(ts * 0.0017) * 0.05).toFixed(4)}) translate(${-W / 2} ${-H * 0.94})`);
+                }
+            };
+        }
+
+        // ══════════ 00 文字揭示预览（噪声场，站点形态） ══════════
+        function makePreview(canvas) {
+            const W = 92, H = 120;
+            const sim = document.createElement("canvas");
+            sim.width = W; sim.height = H;
+            const sctx = sim.getContext("2d");
+            const img = sctx.createImageData(W, H);
+            const cw = canvas.width, chh = canvas.height;
+            const c2 = canvas.getContext("2d");
+            const HALF = 0.26, REACH = 0.8;
+            const win = new Float32Array(W);
+            for (let x = 0; x < W; x += 1) {
+                const u = (x / (W - 1) - 0.5) / HALF + 0.5;
+                win[x] = Math.pow(Math.sin(Math.PI * Math.min(1, Math.max(0, u))), 0.75);
+            }
+            // 正文画布（亮字）
+            const textC = document.createElement("canvas");
+            textC.width = cw; textC.height = chh;
+            const tc = textC.getContext("2d");
+            // 火焰层：热幕 + 亮字按火焰 alpha 合成，再整层贴到底图上
+            const fireC = document.createElement("canvas");
+            fireC.width = cw; fireC.height = chh;
+            const fc = fireC.getContext("2d");
+            const LINES = [
+                "挫折阻止我们出丑，挫折阻止我们出彩。",
+                "人无法对未选择的道路祛魅，除非亲自走一遍。",
+                "世界上只有一种真正的英雄主义，就是认清生活之后仍然热爱生活。",
+                "我们缺少的并非勇气，而是综合过往与当下之后的知难而退。",
+                "找到一个问题，一个尽可能小而明确的问题，然后努力解决它。",
+                "随着书评的最后一个句号被写下，又一本书被我读完了。"
+            ];
+            function drawText(alpha, color) {
+                tc.font = `400 ${Math.round(17 * DPR)}px ${FONT}`;
+                tc.textBaseline = "middle";
+                tc.fillStyle = color;
+                tc.globalAlpha = alpha;
+                for (let i = 0; i < 14; i += 1) {
+                    const y = (0.06 + i * 0.068) * chh;
+                    const line = LINES[i % LINES.length];
+                    const x = ((i % 3) - 1) * 60 * DPR + 10 * DPR;
+                    tc.fillText(line + "     " + line, x, y);
+                    tc.globalAlpha = alpha * 0.25;
+                    tc.fillRect(0, y + 13 * DPR, cw, 1);
+                    tc.globalAlpha = alpha;
+                }
+                tc.globalAlpha = 1;
+            }
+            drawText(1, "#e8edf2");
+            // 底图：极淡的字 + 热幕前的暗场
+            c2.fillStyle = "#05070a";
+            c2.fillRect(0, 0, cw, chh);
+            c2.drawImage(textC, 0, 0);
+            c2.globalCompositeOperation = "destination-in";
+            c2.fillStyle = "rgba(0,0,0,0.07)";
+            c2.fillRect(0, 0, cw, chh);
+            c2.globalCompositeOperation = "source-over";
+
+            let t = Math.random() * 100;
+            function step() {
+                t += 1 / SIM_HZ;
+                const rise = t * 1.05;
+                const sway = (Math.sin(t * 0.6) * 0.5 + Math.sin(t * 0.23 + 1.4) * 0.3) * 0.05;
+                const d = img.data;
+                for (let row = 0; row < H; row += 1) {
+                    const up = 1 - row / (H - 1);
+                    const fade = Math.max(0, 1 - up / REACH);
+                    const ero = 0.3 + 1.6 * up * up;
+                    const span = HALF * (1 - 0.8 * up * up * (3 - 2 * up));
+                    const swayU = sway * up * up;
+                    for (let col = 0; col < W; col += 1) {
+                        const u = col / (W - 1);
+                        const su = u + swayU;
+                        const winT = Math.min(1, Math.max(0, (u - 0.5) / span + 0.5));
+                        const w = Math.pow(Math.sin(Math.PI * winT), 0.75);
+                        const n = fbm(su * 3.1 + 13.7, (1 - up) * 2.5 + rise);
+                        const s = fade * w * 1.5 - (n - 0.5) * ero;
+                        const idx = (row * W + col) * 4;
+                        if (s > 0.03) {
+                            let a = s * 2.3;
+                            if (a > 1) a = 1;
+                            d[idx + 3] = (Math.pow(a, 1.2) * 255) | 0;
+                        } else {
+                            d[idx + 3] = 0;
+                        }
+                    }
+                }
+                sctx.putImageData(img, 0, 0);
+            }
+            return {
+                frame() {
+                    step();
+                    // 火焰层：火焰 alpha 先 source-in 染成热幕（白色火身被替换掉），
+                    // 再 source-atop 烧出亮字——火保持全透明
+                    fc.globalCompositeOperation = "source-over";
+                    fc.clearRect(0, 0, cw, chh);
+                    fc.imageSmoothingEnabled = true;
+                    fc.imageSmoothingQuality = "high";
+                    // 火焰按模拟网格自身的纵横比居中放置，避免横向拉伸
+                    const fw = chh * (W / H);
+                    const fx = (cw - fw) / 2;
+                    fc.drawImage(sim, fx, 0, fw, chh);
+                    fc.globalCompositeOperation = "source-in";
+                    fc.fillStyle = "rgba(206, 221, 233, 0.1)";
+                    fc.fillRect(0, 0, cw, chh);
+                    fc.globalCompositeOperation = "source-atop";
+                    fc.drawImage(textC, 0, 0);
+                    fc.globalCompositeOperation = "source-over";
+                    // 底图：暗场 + 极淡的字，再贴上火焰层
+                    c2.globalCompositeOperation = "source-over";
+                    c2.fillStyle = "#05070a";
+                    c2.fillRect(0, 0, cw, chh);
+                    c2.globalAlpha = 0.07;
+                    c2.drawImage(textC, 0, 0);
+                    c2.globalAlpha = 1;
+                    c2.drawImage(fireC, 0, 0);
+                }
+            };
+        }
+
+        const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "Microsoft YaHei", sans-serif';
+
+        // ══════════ 装配 ══════════
+        const CSS_W = 340, CSS_H = 440;
+        const builders = {
+            ca: makeCA,
+            noise: makeNoise,
+            particle: makeParticle,
+            fluid: makeFluid,
+            gl: makeGL
+        };
+        const runners = [];
+        const fpsState = [];
+
+        document.querySelectorAll(".demo").forEach((section) => {
+            const kind = section.dataset.demo;
+            if (kind === "svg") {
+                return;   // SVG 火焰单独装配
+            }
+            const canvas = section.querySelector("canvas.demo-fire");
+            fitCanvas(canvas, CSS_W, CSS_H);
+            const inst = builders[kind](canvas);
+            if (inst.failed) {
+                section.querySelector(".fps").textContent = "WebGL 不可用";
+                return;
+            }
+            runners.push({ el: canvas, inst, last: 0, acc: 0 });
+            fpsState.push({ el: section.querySelector(".fps"), frames: 0, ms: 0, t: performance.now() });
+        });
+
+        // 预览面板
+        const previewCanvas = document.getElementById("c-preview");
+        (function () {
+            const rect = previewCanvas.getBoundingClientRect();
+            fitCanvas(previewCanvas, rect.width || 860, 430);
+        })();
+        const previewInst = makePreview(previewCanvas);
+        runners.push({ el: previewCanvas, inst: previewInst, last: 0, acc: 0 });
+        fpsState.push({ el: document.getElementById("fps-0"), frames: 0, ms: 0, t: performance.now() });
+
+        // SVG demo：canvas 之外单独装配
+        (function () {
+            const section = document.querySelector('[data-demo="svg"]');
+            const stage = section.querySelector(".stage");
+            stage.innerHTML = "";
+            const holder = document.createElement("div");
+            holder.style.cssText = `width:${CSS_W}px;height:${CSS_H}px`;
+            stage.appendChild(holder);
+            const inst = makeSVG(holder);
+            runners.push({ el: holder, inst, last: 0, acc: 0, svg: true });
+            fpsState.push({ el: section.querySelector(".fps"), frames: 0, ms: 0, t: performance.now() });
+        })();
+
+        function loop(ts) {
+            requestAnimationFrame(loop);
+            for (let i = 0; i < runners.length; i += 1) {
+                const r = runners[i];
+                const st = fpsState[i];
+                if (!r.visible) {
+                    continue;
+                }
+                // 模拟类统一 30Hz，够顺滑也最能反映真实开销
+                r.acc += ts - (r.last || ts);
+                r.last = ts;
+                if (r.acc < 1000 / SIM_HZ) {
+                    continue;
+                }
+                const t0 = performance.now();
+                r.inst.frame(ts);
+                const cost = performance.now() - t0;
+                st.frames += 1;
+                st.ms += cost;
+                r.acc = 0;
+            }
+        }
+        requestAnimationFrame(loop);
+
+        setInterval(() => {
+            const now = performance.now();
+            for (const st of fpsState) {
+                const dt = (now - st.t) / 1000;
+                const fps = st.frames / Math.max(0.001, dt);
+                const avg = st.frames ? st.ms / st.frames : 0;
+                st.el.innerHTML = `<b>${fps.toFixed(0)}</b> fps · ${avg.toFixed(1)} ms/帧`;
+                st.frames = 0;
+                st.ms = 0;
+                st.t = now;
+            }
+        }, 1000);
+
+        // 离屏暂停
+        const io = new IntersectionObserver((entries) => {
+            for (const e of entries) {
+                const i = runners.findIndex((r) => r.el === e.target || r.el.contains(e.target));
+                if (i >= 0) {
+                    runners[i].visible = e.isIntersecting;
+                }
+            }
+        }, { threshold: 0 });
+        runners.forEach((r) => io.observe(r.el));
+        runners.forEach((r) => { r.visible = true; });
+
+        // ?step=N：同步预烧 N 帧后静止（供截图评审；rAF 被节流的环境也能看到形态）
+        const stepN = parseInt(new URLSearchParams(location.search).get("step") || "0", 10);
+        if (stepN > 0) {
+            for (const r of runners) {
+                r.visible = true;
+                const base = performance.now();
+                for (let i = 0; i < stepN; i += 1) {
+                    r.inst.frame(base + i * 33);
+                }
+            }
+        }
+    })();
+    </script>
+</body>
+</html>

@@ -1,9 +1,20 @@
+// 内容元数据覆盖：content/ 下的 md 由 Obsidian 发布流程管理，
+// 标题、日期、显隐等展示层属性在这里覆盖，不改动源文件。
+const CONTENT_OVERRIDES = {
+    "articles/2025.12.17": { title: "见天明" },
+    "articles/2024.5.25": { title: "无题" },
+    "articles/2024.6.30": { title: "无题" },
+    "articles/2025.7.22": { title: "无题" },
+    "articles/2020.2.7": { hidden: true },
+    "articles/自行车": { date: "2026/05/28" }
+};
+
+// 仅展示四类：记忆（memories）与清单（misc）的内容仍留在 content/ 与数据里，但不在站上展示
 const CATEGORY_META = {
     articles: { label: "文章", order: 1 },
     notes: { label: "笔记", order: 2 },
-    poetry: { label: "古典文本", order: 3 },
-    memories: { label: "记忆", order: 4 },
-    misc: { label: "清单", order: 5 }
+    poetry: { label: "诗·词·赋", order: 3 },
+    works: { label: "文学作品", order: 4 }
 };
 
 const state = {
@@ -17,10 +28,9 @@ const state = {
 
 const elements = {
     themeToggle: document.getElementById("theme-toggle"),
-    mastheadTitle: document.getElementById("masthead-title"),
     revealField: document.getElementById("reveal-field"),
     revealPattern: document.getElementById("reveal-pattern"),
-    revealWords: document.getElementById("reveal-words"),
+    flarePos: document.getElementById("flare-pos"),
     latestPanel: document.getElementById("latest-panel"),
     quoteStrip: document.getElementById("quote-strip"),
     totalCount: document.getElementById("total-count"),
@@ -211,9 +221,13 @@ function buildItems() {
             }
 
             const markdown = category === "articles" ? normalizeArticleMarkdown(rawMarkdown) : String(rawMarkdown || "");
-            const title = extractTitle(markdown, key);
+            const override = CONTENT_OVERRIDES[key] || {};
+            if (override.hidden) {
+                return null;
+            }
+            const title = override.title || extractTitle(markdown, key);
             const excerpt = extractExcerpt(markdown, title);
-            const date = parseDateFromKey(key);
+            const date = override.date ? new Date(override.date) : parseDateFromKey(key);
             const words = wordCount(markdown);
             const searchText = `${title} ${excerpt} ${markdown} ${meta.label}`.toLowerCase();
 
@@ -246,7 +260,8 @@ function buildItems() {
 }
 
 function itemMeta(item) {
-    return `${item.categoryLabel} / ${formatDate(item.date)} / ${item.words}字`;
+    const date = item.date ? ` / ${formatDate(item.date)}` : "";
+    return `${item.categoryLabel}${date} / ${item.words}字`;
 }
 
 function openReader(key) {
@@ -301,52 +316,116 @@ function renderLatest() {
     `;
 }
 
+// 未照亮区的兜底索引：内容不足时补齐，避免背景场出现空洞
+const GHOST_FALLBACK = [
+    "为失败赋魅", "再读《论持久战》", "拖延心理学", "辩证唯物主义的思维游戏",
+    "最后的问题", "趁生命气息逗留", "福格行为模型", "页隙碎笔"
+];
+
+// 背景场只接受"像标题"的短句：过长会打乱节奏，含句读的多半是句子
+function isGhostTitle(title) {
+    if (!title || title.length < 2 || title.length > 14) {
+        return false;
+    }
+    if (isDateOnlyTitle(title)) {
+        return false;
+    }
+    if (/[。；：，、！？!?《》〈〉]/.test(title)) {
+        return false;
+    }
+    if (/^\d/.test(title)) {
+        return false;
+    }
+    return true;
+}
+
+// 未照亮区显示作者自己的文章标题，读作"灼进纸里的自建索引"
+function buildBackgroundTitles() {
+    const order = ["articles", "notes", "works"];
+    const seen = new Set();
+    const titles = [];
+
+    for (const category of order) {
+        for (const item of state.items) {
+            if (item.category !== category) {
+                continue;
+            }
+            const title = String(item.title || "").trim();
+            if (!isGhostTitle(title) || seen.has(title)) {
+                continue;
+            }
+            seen.add(title);
+            titles.push(title);
+            if (titles.length >= 12) {
+                break;
+            }
+        }
+        if (titles.length >= 12) {
+            break;
+        }
+    }
+
+    let cursor = 0;
+    while (titles.length < 8) {
+        titles.push(GHOST_FALLBACK[cursor % GHOST_FALLBACK.length]);
+        cursor += 1;
+    }
+
+    return titles.slice(0, 12);
+}
+
+// 被火焰烧穿的正文：只取长度适中、以句号收尾的完整句，避免出现无意义的半句
+function buildLitSentences() {
+    const pool = [];
+
+    const LIT_CATEGORIES = new Set(["articles", "notes", "works"]);
+    for (const item of state.items) {
+        if (!LIT_CATEGORIES.has(item.category) || !item.markdown) {
+            continue;
+        }
+        const cleaned = sanitizeInline(item.markdown);
+        for (const raw of cleaned.split(/(?<=[。！？!?；;])\s*/)) {
+            const sentence = raw.trim();
+            if (sentence.length < 12 || sentence.length > 34) {
+                continue;
+            }
+            if (!/[。！？!?]$/.test(sentence)) {
+                continue;
+            }
+            if (/^[\s，,、；;：:。！？!?）)】」』]/.test(sentence)) {
+                continue;
+            }
+            pool.push(sentence);
+        }
+    }
+
+    const unique = Array.from(new Set(pool));
+    for (let i = unique.length - 1; i > 0; i -= 1) {
+        const j = (i * 7 + 3) % (i + 1);
+        [unique[i], unique[j]] = [unique[j], unique[i]];
+    }
+
+    state.revealSnippets = unique.length
+        ? unique
+        : ["把内容从装饰里剥离出来。", "索引不是答案，是入口。", "文字需要反复经过。"];
+
+    return state.revealSnippets;
+}
+
 function renderRevealField() {
-    if (!elements.revealPattern || !elements.revealWords) {
+    if (!elements.revealPattern) {
         return;
     }
 
-    const patternTokens = ["CONTENT", "ARCHIVE", "INDEX", "NOTES", "ESSAY", "MEMORY", "LANGUAGE", "文章", "笔记", "记忆", "文本", "READING"];
-    elements.revealPattern.innerHTML = patternTokens
-        .map((token, index) => `<span class="pattern-token pattern-token-${index + 1}">${escapeHtml(token)}</span>`)
+    const ghostTitles = buildBackgroundTitles();
+    elements.revealPattern.innerHTML = ghostTitles
+        .map((title, index) => `<span class="pattern-token pattern-token-${index + 1}">${escapeHtml(title)}</span>`)
         .join("");
 
-    const sourceSnippets = state.items
-        .filter((item) => item.markdown && item.markdown.trim().length > 0)
-        .flatMap((item) => {
-            const cleaned = sanitizeInline(item.markdown);
-            const sentences = cleaned
-                .split(/(?<=[。！？!?；;])\s*/)
-                .flatMap((sentence) => {
-                    const trimmed = sentence.trim();
-                    return trimmed.length > 30 ? trimmed.split(/(?<=[，,、：:])\s*/) : [trimmed];
-                })
-                .map((part) => part.trim())
-                .filter((part) => part.length >= 8 && part.length <= 30);
-            return sentences.length ? sentences : [item.excerpt || item.title];
-        })
-        .filter(Boolean)
-        .slice(0, 96);
-
-    state.revealSnippets = sourceSnippets.length
-        ? sourceSnippets
-        : ["把内容从装饰里剥离出来", "索引不是答案，是入口", "文字需要反复经过"];
-
-    const rowMeta = Array.from({ length: 18 }, (_, index) => {
-        const x = 50 + [0, -10, 8, -16, 13, -5, 17, -12, 5][index % 9];
-        const y = 5.5 + index * 5.25;
-        const width = [118, 106, 112, 124, 102, 116][index % 6];
-        const scale = ["small", "medium", "large", "small", "wide", "medium"][index % 6];
-        return [x, y, width, scale];
-    });
-
-    elements.revealWords.innerHTML = rowMeta.map(([x, y, width, scale], index) => {
-        const text = Array.from({ length: 8 }, (_, slot) => {
-            const snippetIndex = (index * 5 + slot * 3) % state.revealSnippets.length;
-            return state.revealSnippets[snippetIndex];
-        }).join("     ");
-        return `<span class="reveal-line ${scale}" style="--x:${x}%;--y:${y}%;--w:${width}vw;--i:${index}">${escapeHtml(text)}</span>`;
-    }).join("");
+    // 被火焰烧穿的正文交给 RevealFire 预渲染并按火焰密度显形
+    if (window.RevealFire) {
+        window.RevealFire.setSentences(buildLitSentences());
+    }
 }
 
 function renderQuotes() {
@@ -416,13 +495,13 @@ function renderArchive() {
             <article class="archive-row">
                 <div class="item-meta">${escapeHtml(item.categoryLabel)}</div>
                 <div>
-                    <h3>${escapeHtml(item.title)}</h3>
+                    <h3 class="archive-title" role="button" tabindex="0" data-open="${escapeHtml(item.key)}">${escapeHtml(item.title)}</h3>
                     ${item.excerpt ? `<p>${escapeHtml(item.excerpt)}</p>` : ""}
                 </div>
+                ${item.category === "articles" && item.date ? `
                 <div>
                     <p class="item-meta">${escapeHtml(formatDate(item.date))}</p>
-                    <button class="archive-open" data-open="${escapeHtml(item.key)}">Open</button>
-                </div>
+                </div>` : ""}
             </article>
         `)
         .join("");
@@ -477,103 +556,40 @@ function initTheme() {
 
 function initRevealField() {
     const field = elements.revealField;
-    if (!field) {
+    const flarePos = elements.flarePos;
+    const masthead = document.querySelector(".masthead");
+
+    if (!masthead) {
         return;
     }
-    const masthead = document.querySelector(".masthead");
-    let scrollTicking = false;
-    let torchFrame = 0;
 
-    const updateMetrics = () => {
-        const radiusPx = Math.round((3 / 2.54) * 96);
-        field.style.setProperty("--mask-core", "3cm");
-        field.style.setProperty("--mask-size", "4.6cm");
-        field.style.setProperty("--torch-size", "4.6cm");
-        field.style.setProperty("--line-max", `${Math.round(radiusPx * 2.35)}px`);
-    };
-
-    const updateTorch = (time = 0) => {
-        const t = time / 1000;
-        const pulse =
-            Math.sin(t * 1.55) * 0.5 +
-            Math.sin(t * 3.15 + 1.4) * 0.36 +
-            Math.sin(t * 5.9 + 2.8) * 0.2;
-        const lick = Math.sin(t * 7.2 + Math.sin(t * 1.1) * 0.9) * 0.22;
-        const driftX = Math.sin(t * 1.18 + 0.7) * 18 + Math.sin(t * 2.75) * 8.5;
-        const driftY = Math.cos(t * 0.96 + 1.9) * 16 + Math.sin(t * 3.05) * 7;
-        const outerCm = Math.max(4.06, Math.min(5.55, 4.78 + pulse * 0.46 + lick * 0.22));
-        const edgeCm = Math.max(0.38, Math.min(0.95, 0.62 + pulse * 0.16 + lick * 0.06));
-        const alpha = Math.max(0.48, Math.min(0.9, 0.66 + pulse * 0.16 + lick * 0.1));
-        const glow = Math.max(0.12, Math.min(0.34, 0.2 + pulse * 0.075 + lick * 0.05));
-        const smoke = Math.max(0.09, Math.min(0.27, 0.15 + pulse * 0.055 + lick * 0.03));
-
-        field.style.setProperty("--torch-x", `${driftX.toFixed(2)}px`);
-        field.style.setProperty("--torch-y", `${driftY.toFixed(2)}px`);
-        field.style.setProperty("--torch-x2", `${(-driftX * 1.85 + Math.sin(t * 0.91) * 9).toFixed(2)}px`);
-        field.style.setProperty("--torch-y2", `${(driftY * 1.65 + Math.cos(t * 0.83) * 8).toFixed(2)}px`);
-        field.style.setProperty("--torch-x3", `${(driftX * 1.05 + Math.cos(t * 1.56) * 24).toFixed(2)}px`);
-        field.style.setProperty("--torch-y3", `${(-driftY * 1.28 + Math.sin(t * 1.31) * 22).toFixed(2)}px`);
-        field.style.setProperty("--torch-size", `${outerCm.toFixed(3)}cm`);
-        field.style.setProperty("--torch-edge", `${edgeCm.toFixed(3)}cm`);
-        field.style.setProperty("--torch-alpha", alpha.toFixed(3));
-        field.style.setProperty("--torch-glow", glow.toFixed(3));
-        field.style.setProperty("--torch-smoke", smoke.toFixed(3));
-        torchFrame = requestAnimationFrame(updateTorch);
-    };
-
-    const setPoint = (clientX, clientY) => {
-        const rect = field.getBoundingClientRect();
-        const localX = Math.max(0, Math.min(rect.width, clientX - rect.left));
-        const localY = Math.max(0, Math.min(rect.height, clientY - rect.top));
-        field.style.setProperty("--mx", `${localX}px`);
-        field.style.setProperty("--my", `${localY}px`);
-    };
+    // 滚动只驱动 --hero-step（近作卡片的入场节奏）；火焰窗口与指针由 RevealFire 管理
+    let scrollPending = false;
 
     const updateScrollStep = () => {
-        scrollTicking = false;
-        if (!masthead) {
-            return;
-        }
+        scrollPending = false;
         const rect = masthead.getBoundingClientRect();
         const range = Math.max(1, rect.height - window.innerHeight);
         const progress = Math.max(0, Math.min(1, -rect.top / range));
         const easedProgress = Math.max(0, Math.min(1, (progress - 0.18) / 0.82));
         const step = Math.min(8, Math.floor(easedProgress * 9));
-        const progressValue = progress.toFixed(3);
-        masthead.style.setProperty("--hero-progress", progressValue);
-        masthead.style.setProperty("--hero-step", step);
-        document.documentElement.style.setProperty("--hero-progress", progressValue);
+        masthead.style.setProperty("--hero-step", String(step));
         masthead.dataset.step = String(step);
     };
 
     const requestScrollStep = () => {
-        if (!scrollTicking) {
-            scrollTicking = true;
+        if (!scrollPending) {
+            scrollPending = true;
             requestAnimationFrame(updateScrollStep);
         }
     };
 
-    updateMetrics();
     updateScrollStep();
-    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        torchFrame = requestAnimationFrame(updateTorch);
-        document.addEventListener("visibilitychange", () => {
-            if (document.hidden) {
-                cancelAnimationFrame(torchFrame);
-                return;
-            }
-            torchFrame = requestAnimationFrame(updateTorch);
-        });
-    }
-    window.addEventListener("resize", updateMetrics);
-    window.addEventListener("resize", requestScrollStep);
     window.addEventListener("scroll", requestScrollStep, { passive: true });
-    field.addEventListener("pointermove", (event) => setPoint(event.clientX, event.clientY));
-    field.addEventListener("pointerenter", (event) => setPoint(event.clientX, event.clientY));
-    field.addEventListener("pointerleave", () => {
-        field.style.setProperty("--mx", "50%");
-        field.style.setProperty("--my", "43%");
-    });
+
+    if (window.RevealFire && field && flarePos) {
+        window.RevealFire.mount({ field, flarePos });
+    }
 }
 
 function initEvents() {
@@ -605,6 +621,14 @@ function initEvents() {
     document.addEventListener("keydown", (event) => {
         if (event.key === "Escape" && state.openKey) {
             closeReader();
+            return;
+        }
+        if ((event.key === "Enter" || event.key === " ") && event.target instanceof Element) {
+            const target = event.target.closest("[data-open]");
+            if (target) {
+                event.preventDefault();
+                openReader(target.dataset.open);
+            }
         }
     });
 }
